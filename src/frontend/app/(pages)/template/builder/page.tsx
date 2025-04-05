@@ -1,191 +1,164 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import grapesjs, { /*Blocks,*/ Editor } from "grapesjs";
+import { useEffect, useRef, useState } from "react";
+import grapesjs, { Editor } from "grapesjs";
+import { useRouter, useSearchParams } from "next/navigation";
 import "grapesjs/dist/css/grapes.min.css";
 import baseBlocksPlugin from "grapesjs-blocks-basic";
 import { templateApi } from "@/app/services/api";
-import { TemplateData } from "@/app/types/templateTypes";
+import { TemplateModel } from "@/app/types/templateTypes";
+import { initialHtml, initialCss } from "./const/defaultValues";
 
 export default function HomePage() {
   const editorRef = useRef<Editor | null>(null);
+  const [templateName, setTemplateName] = useState<string>("Template 1");
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    const editor = grapesjs.init({
-      container: "#gjs-editor",
-      plugins: [baseBlocksPlugin],
-      pluginsOpts: {
-        "gjs-preset-webpage": {},
-      },
-      height: "600px",
-      fromElement: false,
-      storageManager: false,
-    });
-
-    // Set initial content
-    const initialHtml = `
-<body>
-  <div class="welcome">
-    <h1>Hello, GrapesJS!</h1>
-    <p>This is a simple starter template.</p>
-  </div>
-  <div id="i3i6y" class="gjs-row">
-    <div class="gjs-cell">
-      <div zone-name="Zone" id="i5jwf">[ZONE CONTENT]</div>
-    </div>
-    <div class="gjs-cell">
-      <div zone-name="Zone 2" id="ivgif">[ZONE CONTENT]</div>
-    </div>
-  </div>
-</body>
-    `;
-    
-    const initialCss = `
-* {
-  box-sizing: border-box;
-}
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-}
-h1 {
-  color: darkblue;
-}
-.gjs-row {
-  display: table;
-  padding: 10px;
-  width: 100%;
-}
-.gjs-cell {
-  width: 50%;
-  display: table-cell;
-  height: 75px;
-}
-#i5jwf, #ivgif {
-  min-height: 80px;
-  padding: 4px;
-  text-align: center;
-}
-@media (max-width: 768px) {
-  .gjs-cell {
-    width: 100%;
-    display: block;
-  }
-}
-    `;
-
-    const bm = editor.BlockManager;
-    const dc = editor.DomComponents;
-
-    dc.addType("zone", {
-      isComponent: (el) => el.tagName === "DIV" && el.hasAttribute("zone-name"),
-      model: {
-        defaults: {
-          tagName: "div",
-          draggable: true,
-          droppable: true,
-          attributes: { "zone-name": "" },
-          style: {
-            minHeight: "80px",
-            padding: "4px",
-            "text-align": "center",
-            "border": "1px dashed #ccc",
-          },
-          components: "[ZONE CONTENT]",
-          traits: [
-            {
-              type: "text",
-              label: "Zone Name",
-              name: "zone-name",
-              placeholder: "e.g. Zone, Zone 2",
-            },
-          ],
+      const id = searchParams.get("id");
+      
+      const editor = grapesjs.init({
+        container: "#gjs-editor",
+        plugins: [baseBlocksPlugin],
+        pluginsOpts: {
+          "gjs-preset-webpage": {},
         },
-      },
-    });
+        height: "600px",
+        fromElement: false,
+        storageManager: false,
+      });
+      
+      editorRef.current = editor;
 
-    bm.add("zone-block", {
-      label: "Zone",
-      category: "Basic",
-      content: {
-        type: "zone",
-        attributes: { "zone-name": "Zone" },
-        style: { width: "100%", display: "inline-block" }
-      },
-      attributes: { class: "fa fa-square-o" },
-    });
+      if (id) {
+        loadTemplate(id);
+      }
 
-    bm.remove("video");
-    bm.remove("map");
-
-    // const allBlocks = bm.getAll();
-    // const zoneBlocks = [
-    //   allBlocks.get("zone-block"),
-    //   allBlocks.get("two-zones"),
-    //   allBlocks.get("three-zones")
-    // ].filter(Boolean);
-
-    editor.setComponents(initialHtml);
-    editor.setStyle(initialCss);
-
-    editorRef.current = editor;
+      const bm = editor.BlockManager;
+      const dc = editor.DomComponents;
+  
+      dc.addType("zone", {
+        isComponent: (el) => el.tagName === "DIV" && el.hasAttribute("zone-name"),
+        model: {
+          defaults: {
+            tagName: "div",
+            draggable: true,
+            droppable: true,
+            attributes: { "zone-name": "" },
+            style: {
+              minHeight: "80px",
+              padding: "4px",
+              "text-align": "center",
+              border: "1px dashed #ccc",
+            },
+            components: "[ZONE CONTENT]",
+            traits: [
+              {
+                type: "text",
+                label: "Zone Name",
+                name: "zone-name",
+                placeholder: "e.g. Zone, Zone 2",
+              },
+            ],
+          },
+        },
+      });
+  
+      bm.add("zone-block", {
+        label: "Zone",
+        category: "Basic",
+        content: {
+          type: "zone",
+          attributes: { "zone-name": "Zone" },
+          style: { width: "100%", display: "inline-block" }
+        },
+        attributes: { class: "fa fa-square-o" },
+      });
+  
+      bm.remove("video");
+      bm.remove("map");
+      
+      if (!id) {
+        editor.setComponents(initialHtml);
+        editor.setStyle(initialCss);
+      }
   }, []);
 
-  const handleExport = () => {
+  const loadTemplate = async (id: string) => {
+    try {
+      const response = await templateApi.getById(id);
+
+      const { templateHtml, templateCss } = response.data;
+      editorRef.current?.setComponents(templateHtml);
+      editorRef.current?.setStyle(templateCss);
+      setTemplateName(response.data.name);
+    } catch (err: any) {
+      console.log("Failed to load templates.");
+    } 
+  };
+
+  const handlePublish = () => {
     const html = editorRef.current?.getHtml();
     const css = editorRef.current?.getCss();
     
     const parser = new DOMParser();
     const doc = parser.parseFromString(html || "", "text/html");
     
-    // Собираем все элементы с атрибутом zone-name
     const zoneElements = doc.querySelectorAll("[zone-name]");
-    const zones: Record<string, string> = {};
+    const zones: string[] = [];
     
     zoneElements.forEach((el) => {
       const zoneName = el.getAttribute("zone-name");
       if (zoneName) {
-        zones[zoneName] = "resource";
+        zones.push(zoneName);
       }
     });
     
-    const temDate: TemplateData = {
-      name: "Template 1",
+    const templateModel: TemplateModel = {
+      name: templateName,
       templateHtml: html || "",
       templateCss: css || "",
       zones: zones,
       creater: 1,
     };
     
-    templateApi.create(temDate)
-    // const {data: templates} = templateApi.getAll();
+    const currentTemplateId = searchParams.get("id");
 
-    // if (templates.some((tem: {name:string}) => tem.name === name)) {
-    //   alert('Resource with this name already exists!');
-    //   return;
-    // }
+    if(currentTemplateId) {
+      templateApi.update(currentTemplateId ,templateModel);
 
+      return;
+    }
 
-    // fetch("/api/save-template", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ html, css }),
-    // })
-    //   .then((response) => response.json())
-    //   .then((data) => console.log(data))
-    //   .catch((err) => console.error(err));
+    templateApi.create(templateModel);
   };
 
   return (
     <div>
       <h1>Smart CMS builder</h1>
+      <div className="mb-4">
+        <input
+          type="text"
+          value={templateName}
+          onChange={(e) => setTemplateName(e.target.value)}
+          placeholder="Enter template name"
+          className="p-2 border border-gray-300 rounded"
+        />
+      </div>
       <div>
         <div id="gjs-editor"></div>
         <button
-          onClick={handleExport}
+          onClick={handlePublish}
           className="mt-4 p-2 bg-blue-500 text-white rounded"
         >
-          Export & Save
+          Publish
+        </button>
+        <button
+          onClick={() => router.push("/template")}
+          className="mt-4 ml-4 p-2 bg-gray-700 hover:bg-gray-800 text-white rounded"
+        >
+          Back to Templates
         </button>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { Schema, Document } from 'mongoose';
-import { Resource } from 'src/resources/schema/resource.schema';
+import { Resource } from 'src/resource_module/schema/resource.schema';
 
 export interface Page extends Document {
   id: string;
@@ -21,7 +21,7 @@ export const PageSchema = new Schema<Page>(
     //   required: true,
     //   ref: 'Template',
     // },
-    templateId: {type: String},
+    templateId: { type: String },
     // zones: [
     //   {
     //     zoneName: { type: String, required: true },

@@ -1,4 +1,3 @@
-import { Prop } from '@nestjs/mongoose';
 import { Schema, Document } from 'mongoose';
 
 export interface Template extends Document {
@@ -6,7 +5,7 @@ export interface Template extends Document {
   name: string;
   templateHtml: string;
   templateCss: string;
-  zones: Record<string, string>;
+  zones: string[];
   creater: number;
 }
 
@@ -16,11 +15,17 @@ export const TemplateSchema = new Schema<Template>(
     name: { type: String, required: true },
     templateHtml: { type: String, required: true },
     templateCss: { type: String, require: true },
-    zones: { type: Object, require: true },
+    zones: { type: [String], require: true },
     creater: { type: Number, required: true },
   },
   { timestamps: true },
 );
+
+TemplateSchema.virtual('id').get(function (this: Template) {
+  return this._id;
+});
+
+TemplateSchema.set('toJSON', { virtuals: true });
 
 // TODO: Chose, class or object
 
@@ -55,11 +60,3 @@ export const TemplateSchema = new Schema<Template>(
 // }
 
 // export const TemplateSchema = SchemaFactory.createForClass(Template);
-
-// // TODO: Not changes
-
-TemplateSchema.virtual('id').get(function (this: Template) {
-  return this._id;
-});
-
-TemplateSchema.set('toJSON', { virtuals: true });

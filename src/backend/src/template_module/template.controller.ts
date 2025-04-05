@@ -16,7 +16,7 @@ export class TemplateController {
   constructor(private readonly templateService: TemplateService) {}
 
   @Get()
-  findAll():Promise<TemplateDto[]> {
+  findAll(): Promise<TemplateDto[]> {
     return this.templateService.findAll();
   }
 
@@ -26,7 +26,7 @@ export class TemplateController {
   }
 
   @Post()
-  create(@Body() templateDto: CreateUpdateTemplateDto):Promise<TemplateDto> {
+  create(@Body() templateDto: CreateUpdateTemplateDto): Promise<TemplateDto> {
     return this.templateService.create(templateDto);
   }
 
@@ -34,12 +34,12 @@ export class TemplateController {
   update(
     @Param('id') id: string,
     @Body() templateDto: CreateUpdateTemplateDto,
-  ) :Promise<TemplateDto>{
+  ): Promise<TemplateDto> {
     return this.templateService.update(id, templateDto);
   }
 
   @Delete(':id')
-  delete(@Param('id') id: string):Promise<void> {
+  delete(@Param('id') id: string): Promise<void> {
     return this.templateService.delete(id);
   }
 }

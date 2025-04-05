@@ -11,7 +11,7 @@ import { ResourcesService } from './resources.service';
 import { CreateUpdateResourceDto } from './dto/CreateUpdateResourceDto';
 import { ResourceDto } from './dto/ResourceDto';
 
-@Controller('resources')
+@Controller('resource')
 export class ResourcesController {
   constructor(private readonly resourcesService: ResourcesService) {}
 

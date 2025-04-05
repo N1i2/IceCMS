@@ -13,15 +13,13 @@ export class TemplateService {
     @InjectModel('Template') private readonly templateModel: Model<Template>,
   ) {}
 
-  // TODO: Old Find Functions
-
   async findAll(): Promise<TemplateDto[]> {
     return this.templateModel.find().exec();
   }
 
   async findOne(id: string): Promise<Template> {
     const existingTemplate = await this.templateModel
-      .findOne({ id: id })
+      .findOne({ _id: id })
       .exec();
 
     if (!existingTemplate) {
@@ -31,25 +29,9 @@ export class TemplateService {
     return existingTemplate;
   }
 
-  // TODO: New Find Functions, with use model
-
-  // async findAll(): Promise<TemplateDto[]> {
-  //   const templates = await this.templateModel.find().exec();
-  //   return templates.map(template => createTemplateDto(template));
-  // }
-  
-  // async findOne(id: string): Promise<TemplateDto> {
-  //   const existingTemplate = await this.templateModel.findOne({ _id: id }).exec();
-    
-  //   if (!existingTemplate) {
-  //     throw new NotFoundException(`Template with id "${id}" not found.`);
-  //   }
-  //   return createTemplateDto(existingTemplate);
-  // }
-
   async create(templateDto: CreateUpdateTemplateDto): Promise<TemplateDto> {
     const existingTemplate = await this.templateModel
-      .findOne({ id: templateDto.name })
+      .findOne({ name: templateDto.name })
       .exec();
 
     if (existingTemplate)
@@ -71,8 +53,6 @@ export class TemplateService {
     const existingTemplate = await this.templateModel
       .findOne({ _id: id })
       .exec();
-
-    console.log('id', id);
 
     if (!existingTemplate) {
       throw new NotFoundException(`Resource with id "${id}" not found.`);

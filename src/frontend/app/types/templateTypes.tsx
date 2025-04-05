@@ -1,7 +1,8 @@
-export interface TemplateData {
+export interface TemplateModel {
+    id?: string;
     name: string;
     templateHtml: string;
     templateCss: string;
-    zones: Record<string, string>;
+    zones: string[];
     creater: number;
   }  

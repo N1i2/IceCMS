@@ -19,7 +19,7 @@ export class ResourcesService {
 
   async findOne(id: string): Promise<Resource> {
     const existingResource = await this.resourceModel
-      .findOne({ id })
+      .findOne({ _id: id })
       .exec();
 
     if (!existingResource) {
