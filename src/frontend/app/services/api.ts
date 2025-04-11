@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ResourceData } from "@/app/types/resourceTypes";
+import { ResourceModel } from "@/app/types/resourceTypes";
 import { TemplateModel } from "@/app/types/templateTypes";
 
 const api = axios.create({
@@ -10,10 +10,10 @@ const api = axios.create({
 export default api;
 
 export const resourceApi = {
-  getAll: () => api.get<ResourceData[]>("/resource"), 
-  getByName: (name: string) => api.get<ResourceData>(`/resource/${name}`),
-  create: (data: ResourceData) => api.post<ResourceData>("/resource", data),
-  update: (id: string, data: ResourceData) => api.put<ResourceData>(`/resource/${id}`, data),
+  getAll: () => api.get<ResourceModel[]>("/resource"), 
+  getById: (id: string) => api.get<ResourceModel>(`/resource/${id}`),
+  create: (data: ResourceModel) => api.post<ResourceModel>("/resource", data),
+  update: (id: string, data: ResourceModel) => api.put<ResourceModel>(`/resource/${id}`, data),
   delete: (id: string) => api.delete<void>(`/resource/${id}`),
 };
 

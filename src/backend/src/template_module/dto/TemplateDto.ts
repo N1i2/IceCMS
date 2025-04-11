@@ -6,7 +6,7 @@ export interface TemplateDto {
   templateHtml: string;
   templateCss: string;
   zones: String[];
-  creater: number;
+  creater: string;
 }
 
 export function createTemplateDto(jsonSource: Template): TemplateDto {

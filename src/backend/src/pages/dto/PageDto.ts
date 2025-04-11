@@ -5,9 +5,8 @@ export interface PageDto {
   pageId: string;
   name: string;
   templateId: string;
-  // zones: { zoneName: string; resource: string }[];
   scripts: string[];
-  creater: number;
+  creater: string;
 }
 
 export function createPageDto(jsonSource: Page): PageDto {
@@ -16,7 +15,6 @@ export function createPageDto(jsonSource: Page): PageDto {
     pageId: jsonSource.pageId,
     name: jsonSource.name,
     templateId: jsonSource.templateId,
-    // zones: jsonSource.zones,
     scripts: jsonSource.scripts,
     creater: jsonSource.creater,
   };

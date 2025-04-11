@@ -1,11 +1,11 @@
-import { Resource } from "../schema/resource.schema";
+import { Resource } from '../schema/resource.schema';
 
 export interface ResourceDto {
   id: string;
   name: string;
   type: string;
   value: string;
-  creater: number;
+  creater: string;
 }
 
 export function createResourceDto(jsonSource: Resource): ResourceDto {

@@ -49,7 +49,10 @@ export class ResourcesService {
     return createResourceDto(savedResource);
   }
 
-  async update(id: string, resourceDto: CreateUpdateResourceDto): Promise<ResourceDto> {
+  async update(
+    id: string,
+    resourceDto: CreateUpdateResourceDto,
+  ): Promise<ResourceDto> {
     const existingResource = await this.resourceModel
       .findOne({ _id: id })
       .exec();

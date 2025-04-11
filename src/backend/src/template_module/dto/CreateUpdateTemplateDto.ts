@@ -3,7 +3,7 @@ export interface CreateUpdateTemplateDto {
   templateHtml: string;
   templateCss: string;
   zones: string[];
-  creater: number;
+  creater: string;
 }
 
 // TODO: What area i need

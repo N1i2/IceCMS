@@ -133,7 +133,8 @@
   
   .actions {
     display: flex;
-    justify-content: flex-end;
+    /* justify-content: flex-end; */
+    align-items: center;
     gap: 1rem;
     margin-top: 2rem;
   }
@@ -152,6 +153,13 @@
     background-color: white;
   }
   
+  .backButton {
+    border: 1px solid #e2e8f0;
+    color: #4a5568;
+    background-color: white;
+    margin-right: auto;
+  }
+
   .clearButton:hover {
     background-color: #f7fafc;
   }

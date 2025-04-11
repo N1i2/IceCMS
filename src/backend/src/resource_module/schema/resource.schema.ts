@@ -5,7 +5,7 @@ export interface Resource extends Document {
   name: string;
   type: string;
   value: string;
-  creater: number;
+  creater: string;
 }
 
 export const ResourceSchema = new Schema<Resource>(
@@ -14,7 +14,7 @@ export const ResourceSchema = new Schema<Resource>(
     name: { type: String, required: true },
     type: { type: String, required: true },
     value: { type: String, required: true },
-    creater: { type: Number, required: true },
+    creater: { type: String, required: true },
   },
   { timestamps: true },
 );

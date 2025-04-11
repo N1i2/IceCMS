@@ -6,7 +6,7 @@ export interface Template extends Document {
   templateHtml: string;
   templateCss: string;
   zones: string[];
-  creater: number;
+  creater: string;
 }
 
 export const TemplateSchema = new Schema<Template>(
@@ -16,7 +16,7 @@ export const TemplateSchema = new Schema<Template>(
     templateHtml: { type: String, required: true },
     templateCss: { type: String, require: true },
     zones: { type: [String], require: true },
-    creater: { type: Number, required: true },
+    creater: { type: String, required: true },
   },
   { timestamps: true },
 );

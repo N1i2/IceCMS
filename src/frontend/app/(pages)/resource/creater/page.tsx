@@ -1,9 +1,11 @@
 "use client";
-import { useState, ChangeEvent, useMemo } from 'react';
+
+import { useState, ChangeEvent, useMemo, useEffect } from 'react';
 import styles from './page.module.css';
 import { resourceApi } from '@/app/services/api';
 import Image from 'next/image';
-import { ResourceData } from '@/app/types/resourceTypes';
+import { ResourceModel } from '@/app/types/resourceTypes';
+import { useRouter, useSearchParams } from "next/navigation";
 
 type ResourceType = 'Text' | 'Image' | 'Script';
 
@@ -13,14 +15,38 @@ export default function ResourceCreater() {
   const [textContent, setTextContent] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [errors, setErrors] = useState<{name?: string, file?: string}>({});
+  const [errors, setErrors] = useState<{ name?: string, file?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const id = searchParams.get("id");
+    if (id) {
+      const loadResource = async () => {
+        try {
+          const response = await resourceApi.getById(id);
+          const resource: ResourceModel = response.data;
+          setName(resource.name);
+          setType(resource.type as ResourceType);
+          if (resource.type === 'Image') {
+            setImagePreview(resource.value);
+          } else {
+            setTextContent(resource.value);
+          }
+        } catch (error) {
+          console.error("Failed to load resource", error);
+        }
+      };
+      loadResource();
+    }
+  }, [searchParams]);
 
   const isFormValid = useMemo(() => {
     const isNameValid = name.startsWith('resource_') && name.length > 'resource_'.length;
-    
+
     if (type === 'Image') {
-      return isNameValid && imageFile !== null;
+      return isNameValid && (imageFile !== null || imagePreview !== null);
     }
     return isNameValid && textContent.trim() !== '';
   }, [name, type, textContent, imageFile]);
@@ -37,13 +63,12 @@ export default function ResourceCreater() {
   };
 
   const handleNameBlur = () => {
-    if(name.length <= 'resource_'.length){
-        setName('');
-      setErrors(prev => ({...prev, name: undefined}));
-    }
-    else if (!name.startsWith('resource_')) {
+    if (name.length <= 'resource_'.length) {
+      setName('');
+      setErrors(prev => ({ ...prev, name: undefined }));
+    } else if (!name.startsWith('resource_')) {
       setName(`resource_${name}`);
-      setErrors(prev => ({...prev, name: undefined}));
+      setErrors(prev => ({ ...prev, name: undefined }));
     }
   };
 
@@ -64,7 +89,7 @@ export default function ResourceCreater() {
       const extension = file.name.split('.').pop()?.toLowerCase();
       
       if (!['jpg', 'png', 'jpeg'].includes(extension || '')) {
-        setErrors(prev => ({...prev, file: "Only JPG or PNG files are allowed"}));
+        setErrors(prev => ({ ...prev, file: "Only JPG or PNG files are allowed" }));
         return;
       }
       
@@ -72,7 +97,7 @@ export default function ResourceCreater() {
       reader.onloadend = () => setImagePreview(reader.result as string);
       reader.readAsDataURL(file);
 
-      setErrors(prev => ({...prev, file: undefined}));
+      setErrors(prev => ({ ...prev, file: undefined }));
       setImageFile(file);
     }
   };
@@ -95,22 +120,28 @@ export default function ResourceCreater() {
     setIsLoading(true); 
   
     try {
-      const {data: resources} = await resourceApi.getAll();
+      const { data: resources } = await resourceApi.getAll();
   
-      if (resources.some((res: {name:string}) => res.name === name)) {
+      if (resources.some((res: { name: string }) => res.name === name)&&
+          searchParams.get("id") !== resources.find((res: { name: string }) => res.name === name)?.id) {
         alert('Resource with this name already exists!');
         setIsLoading(false);
         return;
       }
   
-      const resData: ResourceData = {
+      const resData: ResourceModel = {
         name: name,
         type: type,
         value: type === 'Image' ? imagePreview || '' : textContent,
         creater: 1,
       };
   
-      await resourceApi.create(resData);
+      const id = searchParams.get("id");
+      if (id) {
+        await resourceApi.update(id, resData);
+      } else {
+        await resourceApi.create(resData);
+      }
   
       alert('Resource saved successfully!');
       handleClear();
@@ -190,10 +221,6 @@ export default function ResourceCreater() {
               ) : (
                 <label className={styles.imagePreviewContainer}>
                   <div className={styles.imagePreviewWrapper}>
-                    {/* <img src={imagePreview} 
-                      alt="Preview" 
-                      className={styles.imagePreview}
-                    /> */}
                     <Image
                       src={imagePreview || ''} 
                       alt="Preview"
@@ -220,6 +247,12 @@ export default function ResourceCreater() {
         )}
 
         <div className={styles.actions}>
+          <button
+            onClick={() => router.push("/resource")}
+            className={`${styles.button} ${styles.backButton}`}
+          >
+            Back to Resources
+          </button>
           <button
             onClick={handleClear}
             className={`${styles.button} ${styles.clearButton}`}

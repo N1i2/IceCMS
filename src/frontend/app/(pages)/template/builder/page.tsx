@@ -44,7 +44,7 @@ export default function HomePage() {
           defaults: {
             tagName: "div",
             draggable: true,
-            droppable: true,
+            droppable: false,  // this component need if we want to drop other components inside it
             attributes: { "zone-name": "" },
             style: {
               minHeight: "80px",
@@ -98,7 +98,7 @@ export default function HomePage() {
     } 
   };
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     const html = editorRef.current?.getHtml();
     const css = editorRef.current?.getCss();
     
@@ -115,6 +115,24 @@ export default function HomePage() {
       }
     });
     
+    try {
+      // const response = await templateApi.getAll();
+      // const allTemplates = response.data; 
+
+      const {data: templates} = await templateApi.getAll();
+
+      const duplicate = templates.find((template: TemplateModel) => template.name === templateName)
+      && searchParams.get("id") !== templates.find((res: { name: string }) => res.name === templateName)?.id;
+      
+      if (duplicate) {
+        alert("Template name already exists. Please choose a different name.");
+        return;
+      }
+    } catch (error) {
+      console.error("Error checking for duplicate templates", error);
+      return;
+    }
+
     const templateModel: TemplateModel = {
       name: templateName,
       templateHtml: html || "",

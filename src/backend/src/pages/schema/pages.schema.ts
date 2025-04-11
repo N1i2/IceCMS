@@ -6,9 +6,8 @@ export interface Page extends Document {
   pageId: string;
   name: string;
   templateId: string;
-  // zones: { zoneName: string; resource: string }[];
   scripts: string[];
-  creater: number;
+  creater: string;
 }
 
 export const PageSchema = new Schema<Page>(
@@ -16,24 +15,9 @@ export const PageSchema = new Schema<Page>(
     _id: { type: String },
     pageId: { type: String, required: true, unique: true, index: true },
     name: { type: String, required: true },
-    // templateId: {
-    //   type: Schema.Types.ObjectId,
-    //   required: true,
-    //   ref: 'Template',
-    // },
     templateId: { type: String },
-    // zones: [
-    //   {
-    //     zoneName: { type: String, required: true },
-    //     resource: {
-    //       type: Schema.Types.ObjectId,
-    //       required: true,
-    //       ref: 'Resource',
-    //     },
-    //   },
-    // ],
     scripts: [{ type: Schema.Types.ObjectId, ref: 'Resource' }],
-    creater: { type: Number, required: true },
+    creater: { type: String, required: true },
   },
   { timestamps: true },
 );
