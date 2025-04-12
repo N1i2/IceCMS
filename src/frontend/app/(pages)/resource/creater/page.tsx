@@ -86,7 +86,7 @@ export default function ResourceCreater() {
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const extension = file.name.split('.').pop()?.toLowerCase();
+      const extension = file.name.split('.').pop()?.toLowerCase()!;
       
       if (!['jpg', 'png', 'jpeg'].includes(extension || '')) {
         setErrors(prev => ({ ...prev, file: "Only JPG or PNG files are allowed" }));
@@ -94,7 +94,10 @@ export default function ResourceCreater() {
       }
       
       const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      } 
+
       reader.readAsDataURL(file);
 
       setErrors(prev => ({ ...prev, file: undefined }));
