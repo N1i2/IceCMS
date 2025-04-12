@@ -25,7 +25,7 @@ export default function ResourceCreater() {
     if (id) {
       const loadResource = async () => {
         try {
-          const response = await resourceApi.getById(id);
+          const response = await resourceApi.getById(id)  ;
           const resource: ResourceModel = response.data;
           setName(resource.name);
           setType(resource.type as ResourceType);

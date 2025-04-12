@@ -11,7 +11,7 @@ import { PagesService } from './pages.service';
 import { CreateUpdatePageDto } from './dto/CreateUpdatePageDto';
 import { PageDto } from './dto/PageDto';
 
-@Controller('pages')
+@Controller('page')
 export class PagesController {
   constructor(private readonly pagesService: PagesService) {}
 
@@ -20,10 +20,10 @@ export class PagesController {
     return this.pagesService.findAll();
   }
 
-  // @Get(':pageId')
-  // async findOne(@Param('pageId') pageId: string) {
-  //   return this.pagesService.findOne(pageId);
-  // }
+  @Get(':pageId')
+  async findOne(@Param('pageId') pageId: string) {
+    return this.pagesService.findOne(pageId);
+  }
 
   @Post()
   create(@Body() createPageDto: CreateUpdatePageDto): Promise<PageDto> {

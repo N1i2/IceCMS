@@ -11,31 +11,29 @@ import { createPageDto, PageDto } from './dto/PageDto';
 export class PagesService {
   constructor(@InjectModel('Page') private readonly pageModel: Model<Page>) {}
 
-  async findAll(): Promise<Page[]> {
-    return this.pageModel
-      .find()
-      .populate('templateId zones.resource scripts')
-      .exec();
+  async findAll(): Promise<PageDto[]> {
+    const pages = await this.pageModel.find().exec();
+    return pages.map((page) => createPageDto(page));
   }
 
-  async findOne(id: string): Promise<Page | null> {
-    const existingPage = await this.pageModel.findOne({ id: id }).exec();
+  async findOne(id: string): Promise<PageDto | null> {
+    const existingPage = await this.pageModel.findOne({ _id: id }).exec();
 
     if (!existingPage) {
       throw new NotFoundException(`Resource with name "${id}" not found.`);
     }
 
-    return existingPage;
+    return createPageDto(existingPage);
   }
 
   async create(pageDto: CreateUpdatePageDto): Promise<PageDto> {
     const existingPage = await this.pageModel
-      .findOne({ id: pageDto.name })
+      .findOne({ _id: pageDto.id })
       .exec();
 
     if (existingPage)
       throw new NotFoundException(
-        `Resource with name "${pageDto.name}" already exists.`,
+        `Resource with id "${pageDto.id}" already exists.`,
       );
 
     const newPage = new this.pageModel({
@@ -49,8 +47,6 @@ export class PagesService {
 
   async update(id: string, pageDto): Promise<PageDto | null> {
     const existingPage = await this.pageModel.findOne({ _id: id }).exec();
-
-    console.log('id', id);
 
     if (!existingPage) {
       throw new NotFoundException(`Resource with id "${id}" not found.`);

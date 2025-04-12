@@ -9,9 +9,9 @@ import { ResourcesService } from '../resource_module/resources.service';
 import { TemplateController } from '../template_module/template.controller';
 import { TemplateModule } from '../template_module/template.module';
 import { TemplateService } from '../template_module/template.service';
-import { PagesController } from '../pages/pages.controller';
-import { PagesModule } from '../pages/pages.module';
-import { PagesService } from '../pages/pages.service';
+import { PagesController } from '../page_module/pages.controller';
+import { PagesModule } from '../page_module/pages.module';
+import { PagesService } from '../page_module/pages.service';
 
 @Module({
   imports: [

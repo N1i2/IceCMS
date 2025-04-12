@@ -6,6 +6,7 @@ export interface Page extends Document {
   pageId: string;
   name: string;
   templateId: string;
+  resources: Map<string, string>;
   scripts: string[];
   creater: string;
 }
@@ -15,8 +16,9 @@ export const PageSchema = new Schema<Page>(
     _id: { type: String },
     pageId: { type: String, required: true, unique: true, index: true },
     name: { type: String, required: true },
-    templateId: { type: String },
-    scripts: [{ type: Schema.Types.ObjectId, ref: 'Resource' }],
+    templateId: { type: String, required: true },
+    scripts: { type: [String], require: true },
+    resources: { type: Map, of: String, require: true },
     creater: { type: String, required: true },
   },
   { timestamps: true },
