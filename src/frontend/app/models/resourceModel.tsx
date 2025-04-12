@@ -1,7 +1,9 @@
+export type ResourceType = 'text' | 'image' | 'script';
+
 export interface ResourceModel {
   id?: string;
   name: string; 
-  type: 'Text' | 'Image' | 'Script'; 
+  type: ResourceType; 
   value: string; 
   creater: number;
 }

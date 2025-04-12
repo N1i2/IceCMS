@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { templateApi } from "@/app/services/api";
-import { TemplateModel } from "@/app/types/templateTypes";
+import { TemplateModel } from "@/app/models/templateModel";
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<TemplateModel[]>([]);

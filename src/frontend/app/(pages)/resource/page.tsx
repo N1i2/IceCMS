@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { resourceApi } from "@/app/services/api";
-import { ResourceModel } from "@/app/types/resourceTypes";
+import { ResourceModel } from "@/app/models/resourceModel";
 
 export default function ResourcesPage() {
   const [resources, setResources] = useState<ResourceModel[]>([]);

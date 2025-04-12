@@ -1,6 +1,6 @@
 import axios from "axios";
-import { ResourceModel } from "@/app/types/resourceTypes";
-import { TemplateModel } from "@/app/types/templateTypes";
+import { ResourceModel } from "@/app/models/resourceModel";
+import { TemplateModel } from "@/app/models/templateModel";
 
 const api = axios.create({
   baseURL: "/api",

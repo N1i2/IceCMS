@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import "grapesjs/dist/css/grapes.min.css";
 import baseBlocksPlugin from "grapesjs-blocks-basic";
 import { templateApi } from "@/app/services/api";
-import { TemplateModel } from "@/app/types/templateTypes";
+import { TemplateModel } from "@/app/models/templateModel";
 import { initialHtml, initialCss } from "./const/defaultValues";
 
 export default function HomePage() {

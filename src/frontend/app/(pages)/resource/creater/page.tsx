@@ -4,14 +4,12 @@ import { useState, ChangeEvent, useMemo, useEffect } from 'react';
 import styles from './page.module.css';
 import { resourceApi } from '@/app/services/api';
 import Image from 'next/image';
-import { ResourceModel } from '@/app/types/resourceTypes';
+import { ResourceModel, ResourceType } from '@/app/models/resourceModel';
 import { useRouter, useSearchParams } from "next/navigation";
-
-type ResourceType = 'Text' | 'Image' | 'Script';
 
 export default function ResourceCreater() {
   const [name, setName] = useState('');
-  const [type, setType] = useState<ResourceType>('Text');
+  const [type, setType] = useState<ResourceType>('text');
   const [textContent, setTextContent] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -29,7 +27,7 @@ export default function ResourceCreater() {
           const resource: ResourceModel = response.data;
           setName(resource.name);
           setType(resource.type as ResourceType);
-          if (resource.type === 'Image') {
+          if (resource.type === 'image') {
             setImagePreview(resource.value);
           } else {
             setTextContent(resource.value);
@@ -45,7 +43,7 @@ export default function ResourceCreater() {
   const isFormValid = useMemo(() => {
     const isNameValid = name.startsWith('resource_') && name.length > 'resource_'.length;
 
-    if (type === 'Image') {
+    if (type === 'image') {
       return isNameValid && (imageFile !== null || imagePreview !== null);
     }
     return isNameValid && textContent.trim() !== '';
@@ -107,7 +105,7 @@ export default function ResourceCreater() {
 
   const handleClear = async () => {
     setName('');
-    setType('Text');
+    setType('text');
     setTextContent('');
     setImageFile(null);
     setImagePreview(null);
@@ -135,7 +133,7 @@ export default function ResourceCreater() {
       const resData: ResourceModel = {
         name: name,
         type: type,
-        value: type === 'Image' ? imagePreview || '' : textContent,
+        value: type === 'image' ? imagePreview || '' : textContent,
         creater: 1,
       };
   
@@ -186,13 +184,13 @@ export default function ResourceCreater() {
             onChange={handleTypeChange}
             className={styles.input}
           >
-            <option value="Text">Text / HTML / CSS</option>
-            <option value="Image">Image</option>
-            <option value="Script">Script</option>
+            <option value="text">Text / HTML / CSS</option>
+            <option value="image">Image</option>
+            <option value="script">Script</option>
           </select>
         </div>
 
-        {(type === 'Text' || type === 'Script') && (
+        {(type === 'text' || type === 'script') && (
           <div className={styles.formGroup}>
             <label htmlFor="content" className={styles.label}>
               {type} Content
@@ -208,7 +206,7 @@ export default function ResourceCreater() {
           </div>
         )}
 
-        {type === 'Image' && (
+        {type === 'image' && (
           <div className={styles.formGroup}>
             <div className={styles.fileUploadContainer}>
               {!imagePreview ? (
