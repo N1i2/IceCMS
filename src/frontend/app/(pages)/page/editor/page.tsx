@@ -3,6 +3,7 @@
 import { PageModel } from '@/app/models/pageModel';
 import { ResourceModel } from '@/app/models/resourceModel';
 import { TemplateModel } from '@/app/models/templateModel';
+import { ScriptType } from '@/app/models/const/ConstantTypes';
 import { useEffect, useState } from 'react';
 
 export default function ResourcesPage() {
@@ -185,7 +186,7 @@ export default function ResourcesPage() {
                   >
                     <option value="">None</option>
                     {resources
-                      .filter((resource) => resource.type !== 'script')
+                      .filter((resource) => resource.type !== ScriptType)
                       .map((resource) => (
                         <option key={resource.id} value={resource.id}>
                           {resource.name}
@@ -215,7 +216,7 @@ export default function ResourcesPage() {
             {resources
               .filter(
                 (resource) =>
-                  resource.type === 'script' &&
+                  resource.type === ScriptType &&
                   !page.scripts.includes(resource.id!),
               )
               .map((resource) => (
@@ -327,7 +328,7 @@ export default function ResourcesPage() {
                 if (!response.ok) {
                   throw new Error('Failed to save page.');
                 }
-                const responseData = await response.json();
+                await response.json();
                 alert('Page saved successfully!');
               } catch (error) {
                 console.error('Error saving page:', error);

@@ -21,12 +21,12 @@ export class PagesController {
   }
 
   @Get(':pageId')
-  async findOne(@Param('pageId') pageId: string) {
+  async findOne(@Param('pageId') pageId: string): Promise<PageDto> {
     return this.pagesService.findOne(pageId);
   }
 
   @Post()
-  create(@Body() createPageDto: CreateUpdatePageDto): Promise<PageDto> {
+  async create(@Body() createPageDto: CreateUpdatePageDto): Promise<PageDto> {
     return this.pagesService.create(createPageDto);
   }
 

@@ -1,9 +1,10 @@
 import { Resource } from '../schema/resource.schema';
+import { ResourceType } from '../const/resourceTypes';
 
 export interface ResourceDto {
   id: string;
   name: string;
-  type: string;
+  type: ResourceType;
   value: string;
   creater: string;
 }

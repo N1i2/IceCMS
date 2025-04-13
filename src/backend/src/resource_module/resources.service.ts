@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Resource } from './schema/resource.schema';
 import { NotFoundException } from '@nestjs/common';
 import { v7 as uuidv7 } from 'uuid';
 import { CreateUpdateResourceDto } from './dto/CreateUpdateResourceDto';
@@ -10,14 +9,15 @@ import { createResourceDto, ResourceDto } from './dto/ResourceDto';
 @Injectable()
 export class ResourcesService {
   constructor(
-    @InjectModel('Resource') private readonly resourceModel: Model<Resource>,
+    @InjectModel('Resource') private readonly resourceModel: Model<ResourceDto>,
   ) {}
 
-  async findAll(): Promise<Resource[]> {
-    return this.resourceModel.find().exec();
+  async findAll(): Promise<ResourceDto[]> {
+    const resource = await this.resourceModel.find().exec();
+    return resource.map((resource) => createResourceDto(resource));
   }
 
-  async findOne(id: string): Promise<Resource> {
+  async findOne(id: string): Promise<ResourceDto> {
     const existingResource = await this.resourceModel
       .findOne({ _id: id })
       .exec();
@@ -26,7 +26,7 @@ export class ResourcesService {
       throw new NotFoundException(`Resource with id "${id}" not found.`);
     }
 
-    return existingResource;
+    return createResourceDto(existingResource);
   }
 
   async create(resourceDto: CreateUpdateResourceDto): Promise<ResourceDto> {

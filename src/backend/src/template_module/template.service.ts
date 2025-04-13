@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Template } from './schema/template.schema';
 import { NotFoundException } from '@nestjs/common';
 import { v7 as uuidv7 } from 'uuid';
 import { CreateUpdateTemplateDto } from './dto/CreateUpdateTemplateDto';
@@ -10,14 +9,15 @@ import { createTemplateDto, TemplateDto } from './dto/TemplateDto';
 @Injectable()
 export class TemplateService {
   constructor(
-    @InjectModel('Template') private readonly templateModel: Model<Template>,
+    @InjectModel('Template') private readonly templateModel: Model<TemplateDto>,
   ) {}
 
   async findAll(): Promise<TemplateDto[]> {
-    return this.templateModel.find().exec();
+    const template = await this.templateModel.find().exec();
+    return template.map((template) => createTemplateDto(template));
   }
 
-  async findOne(id: string): Promise<Template> {
+  async findOne(id: string): Promise<TemplateDto> {
     const existingTemplate = await this.templateModel
       .findOne({ _id: id })
       .exec();
@@ -26,7 +26,7 @@ export class TemplateService {
       throw new NotFoundException(`Template with name "${id}" not found.`);
     }
 
-    return existingTemplate;
+    return createTemplateDto(existingTemplate);
   }
 
   async create(templateDto: CreateUpdateTemplateDto): Promise<TemplateDto> {

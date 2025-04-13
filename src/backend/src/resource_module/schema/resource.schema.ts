@@ -1,9 +1,10 @@
 import { Schema, Document } from 'mongoose';
+import { ResourceType } from '../const/resourceTypes';
 
 export interface Resource extends Document {
   id: string;
   name: string;
-  type: string;
+  type: ResourceType;
   value: string;
   creater: string;
 }

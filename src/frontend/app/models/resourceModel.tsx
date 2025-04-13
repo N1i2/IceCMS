@@ -1,4 +1,4 @@
-export type ResourceType = 'text' | 'image' | 'script';
+import { ResourceType } from './const/ConstantTypes';
 
 export interface ResourceModel {
   id?: string;

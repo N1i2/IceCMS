@@ -5,5 +5,3 @@ export interface CreateUpdateTemplateDto {
   zones: string[];
   creater: string;
 }
-
-// TODO: What area i need

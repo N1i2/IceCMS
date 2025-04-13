@@ -9,15 +9,17 @@ import { createPageDto, PageDto } from './dto/PageDto';
 
 @Injectable()
 export class PagesService {
-  constructor(@InjectModel('Page') private readonly pageModel: Model<Page>) {}
+  constructor(@InjectModel('Page') private readonly pageModel: Model<PageDto>) {}
 
   async findAll(): Promise<PageDto[]> {
     const pages = await this.pageModel.find().exec();
     return pages.map((page) => createPageDto(page));
   }
 
-  async findOne(id: string): Promise<PageDto | null> {
-    const existingPage = await this.pageModel.findOne({ _id: id }).exec();
+  async findOne(id: string): Promise<PageDto> {
+    const existingPage = await this.pageModel
+    .findOne({ _id: id })
+    .exec();
 
     if (!existingPage) {
       throw new NotFoundException(`Resource with name "${id}" not found.`);
@@ -45,7 +47,7 @@ export class PagesService {
     return createPageDto(savedPage);
   }
 
-  async update(id: string, pageDto): Promise<PageDto | null> {
+  async update(id: string, pageDto): Promise<PageDto> {
     const existingPage = await this.pageModel.findOne({ _id: id }).exec();
 
     if (!existingPage) {

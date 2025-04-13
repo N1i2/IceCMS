@@ -5,7 +5,7 @@ export interface TemplateDto {
   name: string;
   templateHtml: string;
   templateCss: string;
-  zones: String[];
+  zones: string[];
   creater: string;
 }
 
