@@ -12,6 +12,9 @@ import {
   ScriptType,
 } from '@/app/models/const/ConstantTypes';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Toaster } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { sendSuccess, sendError } from '../consts/Massages';
 
 export default function ResourceCreater() {
   const [name, setName] = useState('');
@@ -97,13 +100,23 @@ export default function ResourceCreater() {
   };
 
   const isFormValid = () => {
-    if (!name || name.length <= 0) return false;
-    return true;
-  }
+    let errorMessage = '';
+    if (!name || name.length <= 0) errorMessage = 'Uncorrect name';
+    else if (type !== ImageType && textContent.length <= 0)
+      errorMessage = 'Uncorrect content';
+    else if (type === ImageType && !imageFile)
+      errorMessage = 'Uncorrect content';
+
+    if (errorMessage === '') {
+      return true;
+    }
+
+    sendError(errorMessage, 'Please check data in your form.');
+    return false;
+  };
 
   const handleSave = async () => {
-    if (!isFormValid) {
-      alert('Resource not valid');
+    if (!isFormValid()) {
       return;
     }
 
@@ -117,7 +130,10 @@ export default function ResourceCreater() {
         searchParams.get('id') !==
           resources.find((res: { name: string }) => res.name === name)?.id
       ) {
-        alert('Resource with this name already exists!');
+        sendError(
+          `Resource with name ${name} already exists`,
+          'Please choose a different name',
+        );
         setIsLoading(false);
         return;
       }
@@ -137,10 +153,10 @@ export default function ResourceCreater() {
         handleClear();
       }
 
-      alert('Resource saved successfully!');
+      sendSuccess('Сongratulations', 'Resource saved successfully!');
     } catch (error) {
       console.error('Error saving resource:', error);
-      alert('Failed to save resource');
+      sendError('Failed to save resource', 'Somthing wrong');
     } finally {
       setIsLoading(false);
     }
@@ -252,13 +268,16 @@ export default function ResourceCreater() {
           >
             Back to Resources
           </button>
-          <button
-            onClick={handleClear}
-            className={`${styles.button} ${styles.clearButton}`}
+          <Button
+            variant="outline"
+            onClick={() => {
+              handleClear();
+              sendSuccess('Congratulations', 'Form cleared successfully!');
+            }}
           >
             Clear
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={handleSave}
             className={`${styles.button} ${styles.saveButton} ${
               !isFormValid ? styles.disabledButton : ''
@@ -266,9 +285,10 @@ export default function ResourceCreater() {
             disabled={!isFormValid || isLoading}
           >
             {isLoading ? <span className={styles.loader}></span> : 'Save'}
-          </button>
+          </Button>
         </div>
       </div>
+      <Toaster />
     </div>
   );
 }
