@@ -46,35 +46,9 @@ export default function ResourceCreater() {
     }
   }, [searchParams]);
 
-  const isFormValid = useMemo(() => {
-    const isNameValid =
-      name.startsWith('resource_') && name.length > 'resource_'.length;
-
-    if (type === ImageType) {
-      return isNameValid && (imageFile !== null || imagePreview !== null);
-    }
-    return isNameValid && textContent.trim() !== '';
-  }, [name, type, textContent, imageFile]);
-
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setName(value);
-  };
-
-  const handleNameFocus = () => {
-    if (!name) {
-      setName('resource_');
-    }
-  };
-
-  const handleNameBlur = () => {
-    if (name.length <= 'resource_'.length) {
-      setName('');
-      setErrors((prev) => ({ ...prev, name: undefined }));
-    } else if (!name.startsWith('resource_')) {
-      setName(`resource_${name}`);
-      setErrors((prev) => ({ ...prev, name: undefined }));
-    }
   };
 
   const handleTypeChange = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -121,6 +95,11 @@ export default function ResourceCreater() {
     setImagePreview(null);
     setErrors({});
   };
+
+  const isFormValid = () => {
+    if (!name || name.length <= 0) return false;
+    return true;
+  }
 
   const handleSave = async () => {
     if (!isFormValid) {
@@ -183,12 +162,10 @@ export default function ResourceCreater() {
             id="name"
             value={name}
             onChange={handleNameChange}
-            onFocus={handleNameFocus}
-            onBlur={handleNameBlur}
             className={`${styles.input} ${
               errors.name ? styles.inputError : ''
             }`}
-            placeholder="resource_"
+            placeholder="resource name"
           />
           {errors.name && <p className={styles.errorText}>{errors.name}</p>}
         </div>
@@ -212,7 +189,7 @@ export default function ResourceCreater() {
         {(type === TextType || type === ScriptType) && (
           <div className={styles.formGroup}>
             <label htmlFor="content" className={styles.label}>
-              {type} Content
+              {type} content
             </label>
             <textarea
               id="content"

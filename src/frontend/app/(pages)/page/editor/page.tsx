@@ -49,6 +49,73 @@ export default function ResourcesPage() {
     (template) => template.id === page.templateId,
   );
 
+  const isValidPage = () => {
+    if(!page.pageId) {
+      alert('Page ID is required');
+      return false;
+    }
+    if(!page.name) {
+      alert('Page name is required');
+      return false;
+    }
+    if(!page.templateId) {
+      alert('Template is required');
+      return false;
+    }
+
+    return true;
+  }
+
+  const addScript = () => {
+    if (selectedScript && !page.scripts.includes(selectedScript)) {
+      setPage((prev) => ({
+        ...prev,
+        scripts: [...prev.scripts, selectedScript],
+      }));
+      setSelectedScript('');
+    }
+  }
+
+  const handleSave = async () => {
+    try {
+      if(!isValidPage()) return;
+
+      const resultPage = {
+        ...page, 
+        resources: Object.fromEntries(page.resources)
+      }
+
+      const response = await fetch('/api/page', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(resultPage),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save page.');
+      }
+
+      await response.json();
+      alert('Page saved successfully!');
+    } catch (error) {
+      console.error('Error saving page:', error);
+      alert('Error saving page');
+    }
+  };
+
+  const handleClear = () => {
+    setPage(() => ({
+      pageId: '',
+      name: '',
+      templateId: '',
+      resources: new Map<string, string>(),
+      scripts: [],
+      creater: '1',
+    }));
+  };
+
   return (
     <div
       style={{
@@ -61,7 +128,7 @@ export default function ResourcesPage() {
       <div
         style={{
           flex: 1,
-          backgroundColor: '#222', // Тёмный/чёрный фон
+          backgroundColor: '#222',
           color: '#fff',
           padding: '16px',
         }}
@@ -83,7 +150,7 @@ export default function ResourcesPage() {
       <div
         style={{
           width: '300px',
-          backgroundColor: '#333', // Тёмный/чёрный фон для панели
+          backgroundColor: '#333',
           color: '#fff',
           padding: '16px',
           display: 'flex',
@@ -173,9 +240,6 @@ export default function ResourcesPage() {
                       const newResources = new Map(page.resources);
                       newResources.set(zone, e.target.value);
                       setPage((prev) => ({ ...prev, resources: newResources }));
-                      console.log(newResources);
-                      console.log(page);
-
                     }}
                     style={{
                       width: '100%',
@@ -235,15 +299,7 @@ export default function ResourcesPage() {
               color: '#fff',
               border: 'none',
             }}
-            onClick={() => {
-              if (selectedScript && !page.scripts.includes(selectedScript)) {
-                setPage((prev) => ({
-                  ...prev,
-                  scripts: [...prev.scripts, selectedScript],
-                }));
-                setSelectedScript('');
-              }
-            }}
+            onClick={addScript}
           >
             Add script
           </button>
@@ -308,33 +364,25 @@ export default function ResourcesPage() {
               display: 'block',
               width: '100%',
               padding: '8px',
+              marginBottom: '8px',
               backgroundColor: 'red',
               color: '#fff',
               border: 'none',
             }}
-            onClick={async () => {
-              try {
-                
-                const response = await fetch('/api/page', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify(page),
-                });
-                console.log(page);
-
-                console.log(JSON.stringify(page));
-                if (!response.ok) {
-                  throw new Error('Failed to save page.');
-                }
-                await response.json();
-                alert('Page saved successfully!');
-              } catch (error) {
-                console.error('Error saving page:', error);
-                alert('Error saving page');
-              }
+            onClick={handleClear}
+          >
+            Clear
+          </button>
+          <button
+            style={{
+              display: 'block',
+              width: '100%',
+              padding: '8px',
+              backgroundColor: 'red',
+              color: '#fff',
+              border: 'none',
             }}
+            onClick={handleSave}
           >
             Save
           </button>
