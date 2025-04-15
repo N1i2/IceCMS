@@ -8,6 +8,8 @@ import baseBlocksPlugin from "grapesjs-blocks-basic";
 import { templateApi } from "@/app/services/api";
 import { TemplateModel } from "@/app/models/templateModel";
 import { initialHtml, initialCss } from "./const/defaultValues";
+import { sendSuccess, sendError } from '@/helpModule/Massages';
+import { Toaster } from "sonner";
 
 export default function HomePage() {
   const editorRef = useRef<Editor | null>(null);
@@ -94,7 +96,7 @@ export default function HomePage() {
       editorRef.current?.setStyle(templateCss);
       setTemplateName(response.data.name);
     } catch (err: any) {
-      console.log("Failed to load templates.");
+      sendError('Failed to load templates.', 'Please try again');
     } 
   };
 
@@ -122,11 +124,11 @@ export default function HomePage() {
       && searchParams.get("id") !== templates.find((res: { name: string }) => res.name === templateName)?.id;
       
       if (duplicate) {
-        alert("Template name already exists. Please choose a different name.");
+        sendError('Template name already exists', 'Please choose a different nam');
         return;
       }
     } catch (error) {
-      console.error("Error checking for duplicate templates", error);
+      sendError('Error', 'Somthing wrong');
       return;
     }
 
@@ -142,11 +144,12 @@ export default function HomePage() {
 
     if(currentTemplateId) {
       templateApi.update(currentTemplateId ,templateModel);
-
+      sendSuccess('Сongratulations', 'Template successfully updated');
       return;
     }
 
     templateApi.create(templateModel);
+    sendSuccess('Сongratulations', 'Template successfully created');
   };
 
   return (
@@ -176,6 +179,7 @@ export default function HomePage() {
           Back to Templates
         </button>
       </div>
+      <Toaster />
     </div>
   );
 }

@@ -14,7 +14,7 @@ import {
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Toaster } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { sendSuccess, sendError } from '../consts/Massages';
+import { sendSuccess, sendError } from '@/helpModule/Massages';
 
 export default function ResourceCreater() {
   const [name, setName] = useState('');

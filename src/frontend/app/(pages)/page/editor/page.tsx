@@ -5,6 +5,8 @@ import { ResourceModel } from '@/app/models/resourceModel';
 import { TemplateModel } from '@/app/models/templateModel';
 import { ScriptType } from '@/app/models/const/ConstantTypes';
 import { useEffect, useState } from 'react';
+import { sendSuccess, sendError } from '@/helpModule/Massages';
+import { Toaster } from 'sonner';
 
 export default function ResourcesPage() {
   const [page, setPage] = useState<PageModel>({
@@ -27,7 +29,7 @@ export default function ResourcesPage() {
         const data = await response.json();
         setResources(data);
       } catch (error) {
-        console.error('Failed to load resources', error);
+        sendError('Failed to load resources', 'Please try again later');
       }
     };
 
@@ -37,7 +39,7 @@ export default function ResourcesPage() {
         const data = await response.json();
         setTemplates(data);
       } catch (error) {
-        console.error('Failed to load templates', error);
+        sendError('Failed to load templates', 'Please try again later');
       }
     };
 
@@ -51,15 +53,15 @@ export default function ResourcesPage() {
 
   const isValidPage = () => {
     if(!page.pageId) {
-      alert('Page ID is required');
+      sendError('Page ID is required', 'Please change the page ID');
       return false;
     }
     if(!page.name) {
-      alert('Page name is required');
+      sendError('Page name is required', 'Please change the page name');
       return false;
     }
     if(!page.templateId) {
-      alert('Template is required');
+      sendError('Template is required', 'Please change the template');
       return false;
     }
 
@@ -98,10 +100,9 @@ export default function ResourcesPage() {
       }
 
       await response.json();
-      alert('Page saved successfully!');
+      sendSuccess('Congratulations', 'Page saved successfully');``
     } catch (error) {
-      console.error('Error saving page:', error);
-      alert('Error saving page');
+      sendError('Error saving page', 'Please try again later');
     }
   };
 
@@ -388,6 +389,7 @@ export default function ResourcesPage() {
           </button>
         </div>
       </div>
+      <Toaster />
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { resourceApi } from '@/app/services/api';
 import { ResourceModel } from '@/app/models/resourceModel';
 import { Toaster } from '@/components/ui/sonner';
-import { sendSuccess, sendError } from './consts/Massages';
+import { sendSuccess } from '@/helpModule/Massages';
 
 export default function ResourcesPage() {
   const [resources, setResources] = useState<ResourceModel[]>([]);
@@ -85,9 +85,12 @@ export default function ResourcesPage() {
                       Edit
                     </button>
                     <button
-                      onClick={() =>{ 
+                      onClick={() => {
                         handleDelete(resource.id!);
-                        sendSuccess('Congratulations', `Resource with name ${resource.name} deleted successfully!`);
+                        sendSuccess(
+                          'Congratulations',
+                          `Resource with name ${resource.name} deleted successfully!`,
+                        );
                       }}
                       className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
                     >

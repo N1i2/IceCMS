@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { templateApi } from "@/app/services/api";
 import { TemplateModel } from "@/app/models/templateModel";
+import { sendSuccess } from "@/helpModule/Massages";
+import { Toaster } from "sonner";
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<TemplateModel[]>([]);
@@ -82,7 +84,13 @@ export default function TemplatesPage() {
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(template.id!)}
+                      onClick={() => {
+                        handleDelete(template.id!);
+                        sendSuccess(
+                          'Congratulations',
+                          `Resource with name ${template.name} deleted successfully!`,
+                        );
+                      }}
                       className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
                     >
                       Delete
@@ -101,6 +109,7 @@ export default function TemplatesPage() {
           </table>
         )}
       </div>
+      <Toaster />
     </div>
   );
 }
