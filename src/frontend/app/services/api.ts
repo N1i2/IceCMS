@@ -1,6 +1,7 @@
 import axios from "axios";
 import { ResourceModel } from "@/app/models/resourceModel";
 import { TemplateModel } from "@/app/models/templateModel";
+import { PageModel } from "@/app/models/pageModel";
 
 const api = axios.create({
   baseURL: "/api",
@@ -23,4 +24,12 @@ export const templateApi = {
   create: (data: TemplateModel) => api.post("/template", data),
   update: (id: string, data: TemplateModel) => api.put(`/template/${id}`, data),
   delete: (id: string) => api.delete(`/template/${id}`),
+};
+
+export const pageApi = {
+  getAll: () => api.get<PageModel[]>("/page"),
+  getById: (id: string) => api.get(`/page/${id}`),
+  create: (data: PageModel) => api.post("/page", data),
+  update: (id: string, data: PageModel) => api.put(`/page/${id}`, data),
+  delete: (id: string) => api.delete(`/page/${id}`),
 };

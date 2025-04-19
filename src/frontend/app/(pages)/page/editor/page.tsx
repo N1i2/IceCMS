@@ -7,8 +7,12 @@ import { ScriptType } from '@/app/models/const/ConstantTypes';
 import { useEffect, useState } from 'react';
 import { sendSuccess, sendError } from '@/helpModule/Massages';
 import { Toaster } from 'sonner';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { pageApi } from '@/app/services/api';
 
 export default function ResourcesPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [page, setPage] = useState<PageModel>({
     id: undefined,
     pageId: '',
@@ -47,26 +51,51 @@ export default function ResourcesPage() {
     loadTemplates();
   }, []);
 
+  useEffect(() => {
+    const id = searchParams.get('id');
+    if (id) {
+      const loadPage = async () => {
+        try {
+          const response = await pageApi.getById(id);
+          const page = response.data;
+
+          console.log('Response:', page);
+
+          if (!page) {
+            throw new Error('Failed to load page data');
+          }
+          setPage({
+            ...page,
+            resources: new Map(Object.entries(page.resources || {})),
+          });
+        } catch (error) {
+          sendError('Error loading page', `${error}`);
+        }
+      };
+      loadPage();
+    }
+  }, [searchParams]);
+
   const selectedTemplate = templates?.find(
     (template) => template.id === page.templateId,
   );
 
   const isValidPage = () => {
-    if(!page.pageId) {
+    if (!page.pageId) {
       sendError('Page ID is required', 'Please change the page ID');
       return false;
     }
-    if(!page.name) {
+    if (!page.name) {
       sendError('Page name is required', 'Please change the page name');
       return false;
     }
-    if(!page.templateId) {
+    if (!page.templateId) {
       sendError('Template is required', 'Please change the template');
       return false;
     }
 
     return true;
-  }
+  };
 
   const addScript = () => {
     if (selectedScript && !page.scripts.includes(selectedScript)) {
@@ -76,16 +105,16 @@ export default function ResourcesPage() {
       }));
       setSelectedScript('');
     }
-  }
+  };
 
   const handleSave = async () => {
     try {
-      if(!isValidPage()) return;
+      if (!isValidPage()) return;
 
       const resultPage = {
-        ...page, 
-        resources: Object.fromEntries(page.resources)
-      }
+        ...page,
+        resources: Object.fromEntries(page.resources),
+      };
 
       const response = await fetch('/api/page', {
         method: 'POST',
@@ -100,7 +129,8 @@ export default function ResourcesPage() {
       }
 
       await response.json();
-      sendSuccess('Congratulations', 'Page saved successfully');``
+      sendSuccess('Congratulations', 'Page saved successfully');
+      ``;
     } catch (error) {
       sendError('Error saving page', 'Please try again later');
     }
@@ -115,6 +145,7 @@ export default function ResourcesPage() {
       scripts: [],
       creater: '1',
     }));
+    sendSuccess('Cleared', 'The form was cleared.');
   };
 
   return (
@@ -357,8 +388,9 @@ export default function ResourcesPage() {
               color: '#fff',
               border: 'none',
             }}
+            onClick={() => router.push('/page')}
           >
-            Back
+            Back to Page
           </button>
           <button
             style={{
@@ -372,7 +404,7 @@ export default function ResourcesPage() {
             }}
             onClick={handleClear}
           >
-            Clear
+            Clear Form
           </button>
           <button
             style={{

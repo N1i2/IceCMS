@@ -39,17 +39,20 @@ export default function ResourcesPage() {
     }
   };
 
+  const test = () => {
+    sendSuccess('test', 'test');
+  }
+
   return (
-    <div className="p-4 bg-gray-900 text-gray-100 min-h-screen">
+    <div className="p-4 bg-gray-900 min-h-screen">
+      <button onClick={test}>Hello test</button>
       <h1 className="text-3xl font-bold mb-6">Resource</h1>
-      {error && (
-        <div className="bg-red-600 text-red-100 p-3 mb-4 rounded">{error}</div>
-      )}
+      {error && <div className="bg-red-600 p-3 mb-4 rounded">{error}</div>}
 
       <div className="mb-4 flex justify-between items-center">
         <button
           onClick={() => router.push('/resource/creater')}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+          className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded"
         >
           Create New Resource
         </button>
@@ -80,7 +83,7 @@ export default function ResourcesPage() {
                       onClick={() =>
                         router.push(`/resource/creater?id=${resource.id}`)
                       }
-                      className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded mr-2"
+                      className="bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded mr-2"
                     >
                       Edit
                     </button>
@@ -92,7 +95,7 @@ export default function ResourcesPage() {
                           `Resource with name ${resource.name} deleted successfully!`,
                         );
                       }}
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                      className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
                     >
                       Delete
                     </button>
