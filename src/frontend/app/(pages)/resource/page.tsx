@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { resourceApi } from '@/app/services/api';
 import { ResourceModel } from '@/app/models/resourceModel';
-import { Toaster } from '@/components/ui/sonner';
+import { Toaster } from 'sonner';
 import { sendSuccess } from '@/helpModule/Massages';
 
 export default function ResourcesPage() {
@@ -39,13 +39,8 @@ export default function ResourcesPage() {
     }
   };
 
-  const test = () => {
-    sendSuccess('test', 'test');
-  }
-
   return (
     <div className="p-4 bg-gray-900 min-h-screen">
-      <button onClick={test}>Hello test</button>
       <h1 className="text-3xl font-bold mb-6">Resource</h1>
       {error && <div className="bg-red-600 p-3 mb-4 rounded">{error}</div>}
 

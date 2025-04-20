@@ -268,16 +268,17 @@ export default function ResourceCreater() {
           >
             Back to Resources
           </button>
-          <Button
-            variant="outline"
+          <button
+            // variant="outline"
+            className={`${styles.button}${styles.backButton}`}
             onClick={() => {
               handleClear();
               sendSuccess('Congratulations', 'Form cleared successfully!');
             }}
           >
             Clear
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={handleSave}
             className={`${styles.button} ${styles.saveButton} ${
               !isFormValid ? styles.disabledButton : ''
@@ -285,7 +286,7 @@ export default function ResourceCreater() {
             disabled={!isFormValid || isLoading}
           >
             {isLoading ? <span className={styles.loader}></span> : 'Save'}
-          </Button>
+          </button>
         </div>
       </div>
       <Toaster />

@@ -173,8 +173,20 @@ export default function ResourcesPage() {
             padding: '16px',
           }}
         >
-          {/* Здесь может отображаться предпросмотр HTML или любой другой контент */}
-          <p>Здесь будет ваш HTML или другой контент для предпросмотра.</p>
+          {selectedTemplate ? (
+            <>
+              {selectedTemplate.templateCss && (
+                <style
+                  dangerouslySetInnerHTML={{ __html: selectedTemplate.templateCss }}
+                />
+              )}
+              <div
+                dangerouslySetInnerHTML={{ __html: selectedTemplate.templateHtml }}
+              />
+            </>
+          ) : (
+            <p>Здесь будет ваш HTML или другой контент для предпросмотра.</p>
+          )}
         </div>
       </div>
 
