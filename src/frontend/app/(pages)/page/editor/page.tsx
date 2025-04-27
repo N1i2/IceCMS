@@ -4,7 +4,7 @@ import { PageModel } from '@/app/models/pageModel';
 import { ResourceModel } from '@/app/models/resourceModel';
 import { TemplateModel } from '@/app/models/templateModel';
 import { ScriptType } from '@/app/models/const/ConstantTypes';
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { sendSuccess, sendError } from '@/helpModule/Massages';
 import { Toaster } from 'sonner';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -12,6 +12,7 @@ import { pageApi } from '@/app/services/api';
 
 export default function ResourcesPage() {
   const searchParams = useSearchParams();
+  const [htmlText, setHtmlText] = useState('');
   const router = useRouter();
   const [page, setPage] = useState<PageModel>({
     id: undefined,
@@ -25,6 +26,10 @@ export default function ResourcesPage() {
   const [resources, setResources] = useState<ResourceModel[]>([]);
   const [templates, setTemplates] = useState<TemplateModel[]>([]);
   const [selectedScript, setSelectedScript] = useState<string>('');
+
+  useEffect(() => {
+    document.title = 'Page Editor';
+  }, []);
 
   useEffect(() => {
     const loadResources = async () => {
@@ -148,6 +153,12 @@ export default function ResourcesPage() {
     sendSuccess('Cleared', 'The form was cleared.');
   };
 
+  const handleResourceChange = (e: ChangeEvent<HTMLDivElement>) => {};
+
+  // const handleHtmlChange = (e: ChangeEvent<HTMLDivElement>) => {
+
+  // };
+
   return (
     <div
       style={{
@@ -165,7 +176,7 @@ export default function ResourcesPage() {
           padding: '16px',
         }}
       >
-        <h2 style={{ marginTop: 0 }}>Preview / HTML</h2>
+        <h2 style={{ marginTop: 0 }}>Page Editor</h2>
         <div
           style={{
             border: '2px solid #444',
@@ -177,11 +188,15 @@ export default function ResourcesPage() {
             <>
               {selectedTemplate.templateCss && (
                 <style
-                  dangerouslySetInnerHTML={{ __html: selectedTemplate.templateCss }}
+                  dangerouslySetInnerHTML={{
+                    __html: selectedTemplate.templateCss,
+                  }}
                 />
               )}
               <div
-                dangerouslySetInnerHTML={{ __html: selectedTemplate.templateHtml }}
+                dangerouslySetInnerHTML={{
+                  __html: selectedTemplate.templateHtml,
+                }}
               />
             </>
           ) : (
@@ -248,9 +263,16 @@ export default function ResourcesPage() {
           </label>
           <select
             value={page.templateId}
-            onChange={(e) =>
-              setPage((prev) => ({ ...prev, templateId: e.target.value }))
-            }
+            onChange={(e) => {
+              const selectedId = e.target.value;
+              setPage((prev) => ({ ...prev, templateId: selectedId }));
+              const selectedTemplateObj = templates.find(
+                (template) => template.id === selectedId,
+              );
+              setHtmlText(
+                selectedTemplateObj ? selectedTemplateObj.templateHtml : '',
+              );
+            }}
             style={{
               width: '100%',
               padding: '8px',
@@ -284,6 +306,9 @@ export default function ResourcesPage() {
                       const newResources = new Map(page.resources);
                       newResources.set(zone, e.target.value);
                       setPage((prev) => ({ ...prev, resources: newResources }));
+
+                      let html = htmlText.replace('[ZONE CONTENT]', 'hello');
+                      setHtmlText(html);
                     }}
                     style={{
                       width: '100%',

@@ -6,6 +6,7 @@ import { templateApi } from '@/app/services/api';
 import { TemplateModel } from '@/app/models/templateModel';
 import { sendSuccess } from '@/helpModule/Massages';
 import { Toaster } from 'sonner';
+import styles from './page.module.css'; 
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<TemplateModel[]>([]);
@@ -15,6 +16,10 @@ export default function TemplatesPage() {
 
   useEffect(() => {
     loadTemplates();
+  }, []);
+
+  useEffect(() => {
+    document.title = 'Templates';
   }, []);
 
   const loadTemplates = async () => {
@@ -33,82 +38,89 @@ export default function TemplatesPage() {
   const handleDelete = async (id: string) => {
     try {
       await templateApi.delete(id);
+      const template = templates.find((t) => t.id === id);
       loadTemplates();
+      sendSuccess(
+        'Congratulations',
+        `Template with Name \"${template?.name}\" deleted successfully!`,
+      );
     } catch (err: any) {
       setError('Failed to delete template.');
     }
   };
 
   return (
-    <div className="p-4 bg-gray-900 text-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6">Templates</h1>
-      {error && (
-        <div className="bg-red-600 text-red-100 p-3 mb-4 rounded">{error}</div>
-      )}
-
-      <div className="mb-4 flex justify-between items-center">
+    <div className={styles.wrapper}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Templates</h1>
         <button
           onClick={() => router.push('/template/builder')}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+          className={styles.button}
         >
           Create New Template
         </button>
       </div>
 
-      <div className="overflow-x-auto">
-        {loading ? (
-          <p>Loading templates...</p>
-        ) : (
-          <table className="min-w-full border-collapse">
-            <thead>
-              <tr className="bg-gray-800">
-                <th className="border p-2 text-left">Name</th>
-                <th className="border p-2 text-left">Zones</th>
-                <th className="border p-2 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {templates.map((template) => (
-                <tr
-                  key={template.id}
-                  className="odd:bg-gray-700 even:bg-gray-800"
-                >
-                  <td className="border p-2">{template.name}</td>
-                  <td className="border p-2">{template.zones.join(', ')}</td>
-                  <td className="border p-2">
-                    <button
-                      onClick={() =>
-                        router.push(`/template/builder?id=${template.id}`)
-                      }
-                      className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded mr-2"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleDelete(template.id!);
-                        sendSuccess(
-                          'Congratulations',
-                          `Resource with name ${template.name} deleted successfully!`
-                        );
-                      }}
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {templates.length === 0 && (
+      <div className="p-6">
+        {error && <div className={styles.error}>{error}</div>}
+
+        <div className={styles.tableWrapper}>
+          {loading ? (
+            <p className="text-white text-center py-10">Loading templates...</p>
+          ) : (
+            <table className={styles.table}>
+              <thead>
                 <tr>
-                  <td className="border p-2 text-center" colSpan={3}>
-                    No templates found.
-                  </td>
+                  <th>Name</th>
+                  <th>Zones</th>
+                  <th>Actions</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        )}
+              </thead>
+              <tbody>
+                {templates.length > 0 ? (
+                  templates.map((template) => (
+                    <tr key={template.id} className={styles.fadeIn}>
+                      <td>{template.name}</td>
+                      <td
+                        className={
+                          template.zones.length === 0 ? styles.noZones : ''
+                        } 
+                      >
+                        {template.zones.length > 0
+                          ? template.zones.join(', ')
+                          : 'No zones'}
+                      </td>
+                      <td className="text-center">
+                        <div className={styles.actions}>
+                          <button
+                            onClick={() =>
+                              router.push(`/template/builder?id=${template.id}`)
+                            }
+                            className={styles.changeButton}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(template.id!)}
+                            className={styles.changeButton}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={3} className="text-center py-10 text-gray-400">
+                      No templates found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
       <Toaster />
     </div>

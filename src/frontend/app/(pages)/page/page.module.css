@@ -1,7 +1,7 @@
 :root {
   --primary-bg: #0a0a0a;
-  --secondary-accent: #00d6c2; 
-  --light-text: #f1f5f9; 
+  --secondary-accent: #00d6c2; /* Бирюзовый */
+  --light-text: #f1f5f9; /* Светлый */
 }
 
 .container {
@@ -108,8 +108,8 @@
 
 .table th {
   background-color: #0f0f0f;
-  font-size: 150%;
   color: var(--secondary-accent);
+  font-size: 150%;
   font-weight: bold;
 }
 
@@ -125,7 +125,15 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0.8rem;
+  gap: 1rem; /* Пространство между кнопками */
+}
+
+.actions button {
+  margin-right: 1rem; /* Отступ справа для каждой кнопки */
+}
+
+.actions button:last-child {
+  margin-right: 0; /* Убираем отступ для последней кнопки */
 }
 
 .error {
@@ -138,28 +146,10 @@
   margin-bottom: 1rem;
 }
 
-.loadingIndicator {
-  padding: 0.5rem 1rem;
-  background-color: rgba(0, 214, 194, 0.1);
-  border-radius: 0.5rem;
-  color: var(--secondary-accent);
-  font-weight: bold;
-  animation: blink 1s infinite alternate;
-}
-
-@keyframes blink {
-  0% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
 .fadeIn {
   opacity: 0;
   transform: translateY(10px);
-  animation: fadeIn 1s forwards; 
+  animation: fadeIn 1s forwards;
 }
 
 @keyframes fadeIn {

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { pageApi } from '@/app/services/api';
 import { PageModel } from '@/app/models/pageModel';
 import { sendSuccess } from '@/helpModule/Massages';
+import styles from './page.module.css'; 
 import { Toaster } from 'sonner';
 
 export default function PagesPage() {
@@ -15,6 +16,10 @@ export default function PagesPage() {
 
   useEffect(() => {
     loadPages();
+  }, []);
+
+  useEffect(() => {
+    document.title = 'Pages';
   }, []);
 
   const loadPages = async () => {
@@ -34,83 +39,80 @@ export default function PagesPage() {
     try {
       await pageApi.delete(id);
       loadPages();
+      const page = pages.find((page) => page.id === id);
+      sendSuccess(
+        'Congratulations',
+        `Page with name \"${page?.name}\" deleted successfully!`,
+      );
     } catch (err: any) {
       setError('Failed to delete page.');
     }
   };
 
   return (
-    <div className="p-4 bg-gray-900 text-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6">Pages</h1>
-      {error && (
-        <div className="bg-red-600 text-red-100 p-3 mb-4 rounded">{error}</div>
-      )}
-
-      <div className="mb-4 flex justify-between items-center">
+    <div>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Pages</h1>
+        {error && <div className={styles.error}>{error}</div>}
         <button
           onClick={() => router.push('/page/editor')}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+          className={styles.button}
         >
           Create New Page
         </button>
       </div>
 
-      <div className="overflow-x-auto">
-        {loading ? (
-          <p>Loading pages...</p>
-        ) : (
-          <table className="min-w-full border-collapse">
-            <thead>
-              <tr className="bg-gray-800">
-                <th className="border p-2 text-left">Name</th>
-                <th className="border p-2 text-left">PageId</th>
-                <th className="border p-2 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pages.map((page) => (
-                <tr
-                  key={page.id}
-                  className="odd:bg-gray-700 even:bg-gray-800"
-                >
-                  <td className="border p-2">{page.name}</td>
-                  <td className="border p-2">{page.pageId}</td>
-                  <td className="border p-2">
-                    <button
-                      onClick={() =>
-                        router.push(`/page/editor?id=${page.id}`)
-                      }
-                      className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded mr-2"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleDelete(page.id!);
-                        sendSuccess(
-                          'Congratulations',
-                          `Resource with name ${page.name} deleted successfully!`
-                        );
-                      }}
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {pages.length === 0 && (
+      <div className="p-6">
+        <div className={styles.tableWrapper}>
+          {loading ? (
+            <p className="text-white text-center py-10">Loading pages...</p>
+          ) : (
+            <table className={styles.table}>
+              <thead>
                 <tr>
-                  <td className="border p-2 text-center" colSpan={3}>
-                    No pages found.
-                  </td>
+                  <th>Name</th>
+                  <th>PageId</th>
+                  <th>Actions</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        )}
+              </thead>
+              <tbody>
+                {pages.map((page) => (
+                  <tr key={page.id} className={styles.fadeIn}>
+                    <td className={styles.border}>{page.name}</td>
+                    <td className={styles.border}>{page.pageId}</td>
+                    <td className="text-center">
+                      <div className={styles.actions}>
+                        <button
+                          onClick={() =>
+                            router.push(`/page/editor?id=${page.id}`)
+                          }
+                          className={styles.changeButton}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(page.id!)}
+                          className={styles.changeButton}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {pages.length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="text-center py-10 text-gray-400">
+                      No pages found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
-      <Toaster />
+      <Toaster/>
     </div>
   );
 }

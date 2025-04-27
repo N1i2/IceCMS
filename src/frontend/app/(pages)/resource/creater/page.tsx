@@ -27,6 +27,10 @@ export default function ResourceCreater() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+    useEffect(() =>{
+      document.title = "Resource Creater";
+    }, [])
+
   useEffect(() => {
     const id = searchParams.get('id');
     if (id) {
@@ -165,7 +169,7 @@ export default function ResourceCreater() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Resource Builder</h1>
+        <h1 className={styles.title}>Resource Creater</h1>
       </div>
 
       <div className={styles.formContainer}>

@@ -17,6 +17,10 @@ export default function HomePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  useEffect(() =>{
+    document.title = "Template Builder";
+  }, [])
+
   useEffect(() => {
       const id = searchParams.get("id");
       
@@ -124,7 +128,7 @@ export default function HomePage() {
       && searchParams.get("id") !== templates.find((res: { name: string }) => res.name === templateName)?.id;
       
       if (duplicate) {
-        sendError('Template name already exists', 'Please choose a different nam');
+        sendError('Template name already exists', 'Please choose a different name');
         return;
       }
     } catch (error) {
@@ -154,7 +158,7 @@ export default function HomePage() {
 
   return (
     <div>
-      <h1>Smart CMS builder</h1>
+      <h1>Template Builder</h1>
       <div className="mb-4">
         <input
           type="text"
