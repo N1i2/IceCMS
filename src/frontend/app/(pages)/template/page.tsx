@@ -5,15 +5,17 @@ import { useRouter } from 'next/navigation';
 import { templateApi } from '@/app/services/api';
 import { TemplateModel } from '@/app/models/templateModel';
 import { sendSuccess } from '@/helpModule/Massages';
+import styles from './page.module.css';
+import { Button } from '@/components/ui/button';
 import { Toaster } from 'sonner';
-import styles from './page.module.css'; 
 
-export default function TemplatesPage() {
+export default function TemplatesPage() {  
   const [templates, setTemplates] = useState<TemplateModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadingRows, setLoadingRows] = useState<string[]>([]);
   const router = useRouter();
-
+  
   useEffect(() => {
     loadTemplates();
   }, []);
@@ -36,29 +38,32 @@ export default function TemplatesPage() {
   };
 
   const handleDelete = async (id: string) => {
+    setLoadingRows((prev) => [...prev, id]);
     try {
       await templateApi.delete(id);
-      const template = templates.find((t) => t.id === id);
+      const template = templates.find((template) => template.id === id);
       loadTemplates();
       sendSuccess(
         'Congratulations',
-        `Template with Name \"${template?.name}\" deleted successfully!`,
+        `Template with name \"${template?.name}\" deleted successfully!`,
       );
     } catch (err: any) {
       setError('Failed to delete template.');
+    } finally {
+      setLoadingRows((prev) => prev.filter((rowId) => rowId !== id));
     }
   };
 
   return (
-    <div className={styles.wrapper}>
+    <div>
       <div className={styles.header}>
         <h1 className={styles.title}>Templates</h1>
-        <button
+        <Button
           onClick={() => router.push('/template/builder')}
           className={styles.button}
         >
           Create New Template
-        </button>
+        </Button>
       </div>
 
       <div className="p-6">
@@ -81,32 +86,34 @@ export default function TemplatesPage() {
                   templates.map((template) => (
                     <tr key={template.id} className={styles.fadeIn}>
                       <td>{template.name}</td>
-                      <td
-                        className={
-                          template.zones.length === 0 ? styles.noZones : ''
-                        } 
-                      >
-                        {template.zones.length > 0
-                          ? template.zones.join(', ')
-                          : 'No zones'}
+                      <td className={template.zones.length === 0 ? styles.noZones : ''}>
+                        {template.zones.length > 0 ? template.zones.join(', ') : 'No zones'}
                       </td>
                       <td className="text-center">
-                        <div className={styles.actions}>
-                          <button
-                            onClick={() =>
-                              router.push(`/template/builder?id=${template.id}`)
-                            }
-                            className={styles.changeButton}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDelete(template.id!)}
-                            className={styles.changeButton}
-                          >
-                            Delete
-                          </button>
-                        </div>
+                        {loadingRows.includes(template.id!) ? (
+                          <div className={styles.loadingIndicator}>
+                            Loading...
+                          </div>
+                        ) : (
+                          <div className={styles.actions}>
+                            <Button
+                              onClick={() =>
+                                router.push(
+                                  `/template/builder?id=${template.id}`,
+                                )
+                              }
+                              className={styles.changeButton}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              onClick={() => handleDelete(template.id!)}
+                              className={styles.changeButton}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -122,7 +129,7 @@ export default function TemplatesPage() {
           )}
         </div>
       </div>
-      <Toaster />
+      <Toaster/>
     </div>
   );
 }

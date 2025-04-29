@@ -1,9 +1,23 @@
 'use client';
 
-import { useState, ChangeEvent, useMemo, useEffect } from 'react';
-import styles from './page.module.css';
-import { resourceApi } from '@/app/services/api';
+import { useState, ChangeEvent, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Toaster } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { sendSuccess, sendError } from '@/helpModule/Massages';
 import Image from 'next/image';
+import { resourceApi } from '@/app/services/api';
 import { ResourceModel } from '@/app/models/resourceModel';
 import {
   ResourceType,
@@ -11,25 +25,24 @@ import {
   ImageType,
   ScriptType,
 } from '@/app/models/const/ConstantTypes';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Toaster } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { sendSuccess, sendError } from '@/helpModule/Massages';
+import styles from './page.module.css';
 
 export default function ResourceCreater() {
-  const [name, setName] = useState('');
-  const [type, setType] = useState<ResourceType>(TextType);
-  const [textContent, setTextContent] = useState('');
+  const [resource, setResource] = useState<Omit<ResourceModel, 'id'>>({
+    name: '',
+    type: TextType,
+    value: '',
+    creater: 1,
+  });
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ name?: string; file?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
-    useEffect(() =>{
-      document.title = "Resource Creater";
-    }, [])
+  useEffect(() => {
+    document.title = 'Resource Creator';
+  }, []);
 
   useEffect(() => {
     const id = searchParams.get('id');
@@ -37,13 +50,15 @@ export default function ResourceCreater() {
       const loadResource = async () => {
         try {
           const response = await resourceApi.getById(id);
-          const resource: ResourceModel = response.data;
-          setName(resource.name);
-          setType(resource.type as ResourceType);
-          if (resource.type === ImageType) {
-            setImagePreview(resource.value);
-          } else {
-            setTextContent(resource.value);
+          const loadedResource: ResourceModel = response.data;
+          setResource({
+            name: loadedResource.name,
+            type: loadedResource.type,
+            value: loadedResource.value,
+            creater: loadedResource.creater,
+          });
+          if (loadedResource.type === ImageType) {
+            setImageFile(null);
           }
         } catch (error) {
           console.error('Failed to load resource', error);
@@ -53,26 +68,10 @@ export default function ResourceCreater() {
     }
   }, [searchParams]);
 
-  const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setName(value);
-  };
-
-  const handleTypeChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    setType(e.target.value as ResourceType);
-    setTextContent('');
-    setImageFile(null);
-    setImagePreview(null);
-  };
-
-  const handleTextChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setTextContent(e.target.value);
-  };
-
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const extension = file.name.split('.').pop()?.toLowerCase()!;
+      const extension = file.name.split('.').pop()?.toLowerCase();
 
       if (!['jpg', 'png', 'jpeg'].includes(extension || '')) {
         setErrors((prev) => ({
@@ -84,83 +83,89 @@ export default function ResourceCreater() {
 
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        setResource((prev) => ({
+          ...prev,
+          value: reader.result as string,
+        }));
       };
 
       reader.readAsDataURL(file);
-
-      setErrors((prev) => ({ ...prev, file: undefined }));
       setImageFile(file);
+      setErrors((prev) => ({ ...prev, file: undefined }));
     }
   };
 
-  const handleClear = async () => {
-    setName('');
-    setType(TextType);
-    setTextContent('');
+  const handleClear = () => {
+    setResource({
+      name: '',
+      type: TextType,
+      value: '',
+      creater: 1,
+    });
     setImageFile(null);
-    setImagePreview(null);
     setErrors({});
+
+    sendSuccess('Success', 'Resource clear successfully!');
   };
 
   const isFormValid = () => {
-    let errorMessage = '';
-    if (!name || name.length <= 0) errorMessage = 'Uncorrect name';
-    else if (type !== ImageType && textContent.length <= 0)
-      errorMessage = 'Uncorrect content';
-    else if (type === ImageType && !imageFile)
-      errorMessage = 'Uncorrect content';
+    const newErrors: { name?: string; file?: string } = {};
 
-    if (errorMessage === '') {
-      return true;
+    if (!resource.name || resource.name.length <= 0) {
+      newErrors.name = 'Invalid name';
     }
 
-    sendError(errorMessage, 'Please check data in your form.');
-    return false;
+    if (resource.type !== ImageType && resource.value.length <= 0) {
+      sendError('Invalid content', 'Please enter content');
+      return false;
+    }
+
+    if (resource.type === ImageType && !resource.value) {
+      sendError('Invalid content', 'Please upload an image');
+      return false;
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      sendError('Validation error', 'Please check the form');
+      return false;
+    }
+
+    return true;
   };
 
   const handleSave = async () => {
-    if (!isFormValid()) {
-      return;
-    }
+    if (!isFormValid()) return;
 
     setIsLoading(true);
 
     try {
-      const { data: resources } = await resourceApi.getAll();
+      const { data: existingResources } = await resourceApi.getAll();
+      const id = searchParams.get('id');
 
       if (
-        resources.some((res: { name: string }) => res.name === name) &&
-        searchParams.get('id') !==
-          resources.find((res: { name: string }) => res.name === name)?.id
+        existingResources.some(
+          (res) => res.name === resource.name && (!id || res.id !== id),
+        )
       ) {
         sendError(
-          `Resource with name ${name} already exists`,
-          'Please choose a different name',
+          'Name conflict',
+          `Resource with name "${resource.name}" already exists`,
         );
-        setIsLoading(false);
         return;
       }
 
-      const resData: ResourceModel = {
-        name: name,
-        type: type,
-        value: type === ImageType ? imagePreview || '' : textContent,
-        creater: 1,
-      };
-
-      const id = searchParams.get('id');
       if (id) {
-        await resourceApi.update(id, resData);
+        await resourceApi.update(id, resource);
       } else {
-        await resourceApi.create(resData);
+        await resourceApi.create(resource);
         handleClear();
       }
 
-      sendSuccess('Сongratulations', 'Resource saved successfully!');
+      sendSuccess('Success', 'Resource saved successfully!');
     } catch (error) {
       console.error('Error saving resource:', error);
-      sendError('Failed to save resource', 'Somthing wrong');
+      sendError('Error', 'Failed to save resource');
     } finally {
       setIsLoading(false);
     }
@@ -168,90 +173,119 @@ export default function ResourceCreater() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Resource Creater</h1>
-      </div>
+      <h1 className={styles.title}>Resource Creator</h1>
 
-      <div className={styles.formContainer}>
-        <div className={styles.formGroup}>
-          <label htmlFor="name" className={styles.label}>
-            Name
-          </label>
-          <input
-            type="text"
-            id="name"
-            value={name}
-            onChange={handleNameChange}
-            className={`${styles.input} ${
-              errors.name ? styles.inputError : ''
-            }`}
-            placeholder="resource name"
-          />
-          {errors.name && <p className={styles.errorText}>{errors.name}</p>}
-        </div>
-
-        <div className={styles.formGroup}>
-          <label htmlFor="type" className={styles.label}>
-            Type
-          </label>
-          <select
-            id="type"
-            value={type}
-            onChange={handleTypeChange}
-            className={styles.input}
-          >
-            <option value="text">Text / HTML / CSS</option>
-            <option value="image">Image</option>
-            <option value="js">Script</option>
-          </select>
-        </div>
-
-        {(type === TextType || type === ScriptType) && (
+      <Card className={styles.card}>
+        <CardContent className={styles.content}>
           <div className={styles.formGroup}>
-            <label htmlFor="content" className={styles.label}>
-              {type} content
-            </label>
-            <textarea
-              id="content"
-              value={textContent}
-              onChange={handleTextChange}
-              rows={6}
-              className={`${styles.input} ${styles.textarea}`}
-              placeholder={`Enter your ${type.toLowerCase()} here...`}
+            <Label htmlFor="name" className={styles.label}>
+              Name
+            </Label>
+            <Input
+              id="name"
+              value={resource.name}
+              onChange={(e) =>
+                setResource((prev) => ({ ...prev, name: e.target.value }))
+              }
+              className={styles.input}
+              placeholder="Resource name"
             />
+            {errors.name && <p className={styles.errorText}>{errors.name}</p>}
           </div>
-        )}
 
-        {type === ImageType && (
           <div className={styles.formGroup}>
-            <div className={styles.fileUploadContainer}>
-              {!imagePreview ? (
-                <label className={styles.fileUploadButton}>
-                  Choose File
-                  <input
-                    type="file"
-                    accept=".jpg,.jpeg,.png"
-                    onChange={handleImageUpload}
-                    className={styles.fileInput}
-                  />
-                </label>
-              ) : (
-                <label className={styles.imagePreviewContainer}>
-                  <div className={styles.imagePreviewWrapper}>
-                    <Image
-                      src={imagePreview || ''}
-                      alt="Preview"
-                      width={500}
-                      height={300}
-                      className={styles.imagePreview}
-                      priority={false}
-                    />
-                    <div className={styles.imageOverlay}>
-                      <span className={styles.overlayText}>
-                        Click to change image
+            <Label htmlFor="type" className={styles.label}>
+              Type
+            </Label>
+            <Select
+              value={resource.type}
+              onValueChange={(value) => {
+                setResource((prev) => ({
+                  ...prev,
+                  type: value as ResourceType,
+                  value: '',
+                }));
+                setImageFile(null);
+              }}
+            >
+              <SelectTrigger
+                className={`${styles.input} ${styles.selectTrigger}`}
+                id="type"
+              >
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent className={styles.selectContent}>
+                <SelectItem className={styles.selectItem} value={TextType}>
+                  Text / HTML / CSS
+                </SelectItem>
+                <SelectItem className={styles.selectItem} value={ImageType}>
+                  Image
+                </SelectItem>
+                <SelectItem className={styles.selectItem} value={ScriptType}>
+                  Script
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {(resource.type === TextType || resource.type === ScriptType) && (
+            <div className={styles.formGroup}>
+              <Label htmlFor="content" className={styles.label}>
+                {resource.type.toLowerCase()} content
+              </Label>
+              <Textarea
+                id="content"
+                value={resource.value}
+                onChange={(e) =>
+                  setResource((prev) => ({ ...prev, value: e.target.value }))
+                }
+                rows={6}
+                className={`${styles.input} ${styles.textarea}`}
+                placeholder={`Enter your ${resource.type.toLowerCase()} here...`}
+              />
+            </div>
+          )}
+
+          {resource.type === ImageType && (
+            <div className={styles.formGroup}>
+              <Label className={styles.label}>Image</Label>
+              <div className={styles.imagePreview}>
+                <label className={styles.imageUploadLabel}>
+                  {!resource.value ? (
+                    <div className={styles.emptyImagePlaceholder}>
+                      <svg
+                        className={styles.uploadIcon}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        ></path>
+                      </svg>
+                      <span className={styles.uploadHint}>
+                        Click to upload image
                       </span>
                     </div>
-                  </div>
+                  ) : (
+                    <div className={styles.imageContainer}>
+                      <Image
+                        src={resource.value}
+                        alt="Preview"
+                        width={500}
+                        height={300}
+                        className={styles.image}
+                      />
+                      <div className={styles.imageOverlay}>
+                        <span className={styles.overlayText}>
+                          Click to change image
+                        </span>
+                      </div>
+                    </div>
+                  )}
                   <input
                     type="file"
                     accept=".jpg,.jpeg,.png"
@@ -259,40 +293,45 @@ export default function ResourceCreater() {
                     className={styles.fileInput}
                   />
                 </label>
-              )}
-              {errors.file && <p className={styles.errorText}>{errors.file}</p>}
+                {errors.file && (
+                  <p className={styles.errorText}>{errors.file}</p>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <div className={styles.actions}>
-          <button
-            onClick={() => router.push('/resource')}
-            className={`${styles.button} ${styles.backButton}`}
-          >
-            Back to Resources
-          </button>
-          <button
-            // variant="outline"
-            className={`${styles.button}${styles.backButton}`}
-            onClick={() => {
-              handleClear();
-              sendSuccess('Congratulations', 'Form cleared successfully!');
-            }}
-          >
-            Clear
-          </button>
-          <button
-            onClick={handleSave}
-            className={`${styles.button} ${styles.saveButton} ${
-              !isFormValid ? styles.disabledButton : ''
-            }`}
-            disabled={!isFormValid || isLoading}
-          >
-            {isLoading ? <span className={styles.loader}></span> : 'Save'}
-          </button>
-        </div>
-      </div>
+          <div className={styles.actions}>
+            <Button
+              variant="outline"
+              onClick={() => router.push('/resource')}
+              className={styles.outlineButton}
+            >
+              Back to Resources
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleClear}
+              className={styles.outlineButton}
+            >
+              Clear
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={isLoading}
+              className={styles.primaryButton}
+            >
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <span className={styles.loader}>↻</span>
+                  Saving...
+                </span>
+              ) : (
+                'Save'
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
       <Toaster />
     </div>
   );

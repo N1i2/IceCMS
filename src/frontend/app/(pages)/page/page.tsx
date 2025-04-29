@@ -6,6 +6,7 @@ import { pageApi } from '@/app/services/api';
 import { PageModel } from '@/app/models/pageModel';
 import { sendSuccess } from '@/helpModule/Massages';
 import styles from './page.module.css'; 
+import { Button } from '@/components/ui/button';
 import { Toaster } from 'sonner';
 
 export default function PagesPage() {
@@ -54,12 +55,12 @@ export default function PagesPage() {
       <div className={styles.header}>
         <h1 className={styles.title}>Pages</h1>
         {error && <div className={styles.error}>{error}</div>}
-        <button
+        <Button
           onClick={() => router.push('/page/editor')}
           className={styles.button}
         >
           Create New Page
-        </button>
+        </Button>
       </div>
 
       <div className="p-6">
@@ -82,20 +83,20 @@ export default function PagesPage() {
                     <td className={styles.border}>{page.pageId}</td>
                     <td className="text-center">
                       <div className={styles.actions}>
-                        <button
+                        <Button
                           onClick={() =>
                             router.push(`/page/editor?id=${page.id}`)
                           }
                           className={styles.changeButton}
                         >
                           Edit
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           onClick={() => handleDelete(page.id!)}
                           className={styles.changeButton}
                         >
                           Delete
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>

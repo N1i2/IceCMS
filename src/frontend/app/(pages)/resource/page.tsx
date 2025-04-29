@@ -6,6 +6,8 @@ import { resourceApi } from '@/app/services/api';
 import { ResourceModel } from '@/app/models/resourceModel';
 import { sendSuccess } from '@/helpModule/Massages';
 import styles from './page.module.css';
+import { Button } from '@/components/ui/button';
+import { Toaster } from 'sonner';
 
 export default function ResourcesPage() {  
   const [resources, setResources] = useState<ResourceModel[]>([]);
@@ -56,12 +58,12 @@ export default function ResourcesPage() {
     <div>
       <div className={styles.header}>
         <h1 className={styles.title}>Resources</h1>
-        <button
+        <Button
           onClick={() => router.push('/resource/creater')}
           className={styles.button}
         >
           Create New Resource
-        </button>
+        </Button>
       </div>
 
       <div className="p-6">
@@ -92,7 +94,7 @@ export default function ResourcesPage() {
                           </div>
                         ) : (
                           <div className={styles.actions}>
-                            <button
+                            <Button
                               onClick={() =>
                                 router.push(
                                   `/resource/creater?id=${resource.id}`,
@@ -101,13 +103,13 @@ export default function ResourcesPage() {
                               className={styles.changeButton}
                             >
                               Edit
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                               onClick={() => handleDelete(resource.id!)}
                               className={styles.changeButton}
                             >
                               Delete
-                            </button>
+                            </Button>
                           </div>
                         )}
                       </td>
@@ -125,6 +127,7 @@ export default function ResourcesPage() {
           )}
         </div>
       </div>
+      <Toaster/>
     </div>
   );
 }
