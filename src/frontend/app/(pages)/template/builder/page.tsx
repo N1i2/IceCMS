@@ -155,7 +155,6 @@ export default function TemplateBuilderPage() {
 
     await templateApi.create(templateModel);
     sendSuccess('Congratulations', 'Template successfully created');
-    router.push('/template');
   };
 
   return (

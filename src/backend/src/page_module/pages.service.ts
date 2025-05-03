@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Page } from './schema/pages.schema';
 import { NotFoundException } from '@nestjs/common';
 import { v7 as uuidv7 } from 'uuid';
 import { CreateUpdatePageDto } from './dto/CreateUpdatePageDto';
@@ -47,7 +46,7 @@ export class PagesService {
     return createPageDto(savedPage);
   }
 
-  async update(id: string, pageDto): Promise<PageDto> {
+  async update(id: string, pageDto: CreateUpdatePageDto): Promise<PageDto> {
     const existingPage = await this.pageModel.findOne({ _id: id }).exec();
 
     if (!existingPage) {

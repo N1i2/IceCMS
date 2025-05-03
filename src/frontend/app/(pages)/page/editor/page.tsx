@@ -1,6 +1,6 @@
 'use client';
 
-import { ChangeEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { sendSuccess, sendError } from '@/helpModule/Massages';
 import { Toaster } from 'sonner';
@@ -8,7 +8,14 @@ import { pageApi } from '@/app/services/api';
 import { PageModel } from '@/app/models/pageModel';
 import { ResourceModel } from '@/app/models/resourceModel';
 import { TemplateModel } from '@/app/models/templateModel';
-import { ImageType, ScriptType } from '@/app/models/const/ConstantTypes';
+import styles from './page.module.css';
+import { Button } from '@/components/ui/button';
+import { resourceApi } from '@/app/services/api';
+import {
+  ImageType,
+  ScriptType,
+  TextType,
+} from '@/app/models/const/ConstantTypes';
 
 export default function PageEditor() {
   const searchParams = useSearchParams();
@@ -71,42 +78,39 @@ export default function PageEditor() {
   const selectedTemplate = templates.find((t) => t.id === page.templateId);
 
   const updatePreview = () => {
-    const template = selectedTemplate;
-    if (!template) return;
-  
+    if (!selectedTemplate) return;
+
     const parser = new DOMParser();
-    const doc = parser.parseFromString(template.templateHtml, 'text/html');
-  
-    // Для каждой зоны вставляем контент
-    template.zones.forEach((zoneName) => {
+    const doc = parser.parseFromString(
+      selectedTemplate.templateHtml,
+      'text/html',
+    );
+
+    selectedTemplate.zones.forEach((zoneName) => {
       const zoneElement = doc.querySelector(`div[zone-name="${zoneName}"]`);
       if (!zoneElement) return;
-  
+
       const resourceId = page.resources.get(zoneName);
       const resource = resources.find((r) => r.id === resourceId);
-  
+      
       if (resource) {
         if (resource.type === ImageType) {
-          // Вставка изображения
           const img = doc.createElement('img');
+          console.log(resource.value);
           img.src = resource.value;
           img.style.maxWidth = '100%';
           zoneElement.innerHTML = '';
           zoneElement.appendChild(img);
         } else {
-          // Вставка HTML или текста
           zoneElement.innerHTML = resource.value;
         }
       } else {
-        // Если ресурс не выбран — оставить зону пустой
         zoneElement.innerHTML = '[ZONE CONTENT]';
       }
     });
-  
-    // Обновляем HTML предпросмотра
+
     setPreviewHtml(doc.body.innerHTML);
   };
-  
 
   useEffect(() => {
     updatePreview();
@@ -132,22 +136,55 @@ export default function PageEditor() {
     if (!isValidPage()) return;
 
     try {
+      const pagesRes = await pageApi.getAll();
+      const pagesList: PageModel[] = pagesRes.data;
+
+      const duplicatePageId = pagesList.find(
+        (p) =>
+          p.pageId.trim().toLowerCase() === page.pageId.trim().toLowerCase() &&
+          p.id !== page.id,
+      );
+      if (duplicatePageId) {
+        sendError(
+          'Duplicate Page ID',
+          'A page with this Page ID already exists',
+        );
+        return;
+      }
+
+      const duplicatePageName = pagesList.find(
+        (p) =>
+          p.name.trim().toLowerCase() === page.name.trim().toLowerCase() &&
+          p.id !== page.id,
+      );
+      if (duplicatePageName) {
+        sendError(
+          'Duplicate Page Name',
+          'A page with this page name already exists',
+        );
+        return;
+      }
+
       const payload = {
         ...page,
         resources: Object.fromEntries(page.resources),
       };
 
-      const res = await fetch('/api/page', {
-        method: 'POST',
+      const idParam = searchParams.get('id');
+      const method = idParam ? 'PUT' : 'POST';
+      const endpoint = idParam ? `/api/page/${idParam}` : '/api/page';
+
+      const res = await fetch(endpoint, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) throw new Error('Result not ok');
 
       sendSuccess('Saved', 'Page saved successfully');
-    } catch (err) {
-      sendError('Error', 'Saving page failed');
+    } catch (err: any) {
+      sendError('Error', `${err}`);
     }
   };
 
@@ -166,39 +203,43 @@ export default function PageEditor() {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
-      {/* Left - Preview */}
-      <div style={{ flex: 1, backgroundColor: '#222', color: '#fff', padding: '16px' }}>
-        <h2>Page Preview</h2>
-        <div style={{ border: '2px solid #444', padding: '16px', minHeight: '80vh' }}>
+    <div className={styles.editorContainer}>
+      <div className={styles.editorPreview}>
+        <h1>Page Preview</h1>
+        <div className={styles.editorPreviewContent}>
           {selectedTemplate?.templateCss && (
-            <style dangerouslySetInnerHTML={{ __html: selectedTemplate.templateCss }} />
+            <style
+              dangerouslySetInnerHTML={{ __html: selectedTemplate.templateCss }}
+            />
           )}
           <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
         </div>
       </div>
 
-      {/* Right - Settings */}
-      <div style={{ width: '350px', backgroundColor: '#333', color: '#fff', padding: '16px' }}>
+      <div className={styles.editorSidebar}>
+        <h1>Page Editor</h1>
         <label>Page ID</label>
         <input
           type="text"
           value={page.pageId}
-          onChange={(e) => setPage((prev) => ({ ...prev, pageId: e.target.value }))}
-          style={{ width: '100%', padding: '8px', marginBottom: '8px' }}
+          onChange={(e) =>
+            setPage((prev) => ({ ...prev, pageId: e.target.value }))
+          }
         />
         <label>Page Name</label>
         <input
           type="text"
           value={page.name}
-          onChange={(e) => setPage((prev) => ({ ...prev, name: e.target.value }))}
-          style={{ width: '100%', padding: '8px', marginBottom: '16px' }}
+          onChange={(e) =>
+            setPage((prev) => ({ ...prev, name: e.target.value }))
+          }
         />
         <label>Template</label>
         <select
           value={page.templateId}
-          onChange={(e) => setPage((prev) => ({ ...prev, templateId: e.target.value }))}
-          style={{ width: '100%', padding: '8px', marginBottom: '16px' }}
+          onChange={(e) =>
+            setPage((prev) => ({ ...prev, templateId: e.target.value }))
+          }
         >
           <option value="">Select Template</option>
           {templates.map((t) => (
@@ -208,46 +249,48 @@ export default function PageEditor() {
           ))}
         </select>
 
-        {/* Zones */}
         {selectedTemplate?.zones.map((zone) => (
-          <div key={zone} style={{ marginBottom: '12px' }}>
+          <div key={zone} className={styles.zoneRow}>
             <label>{zone}</label>
             <select
+              className={styles.zoneSelect}
               value={page.resources.get(zone) || ''}
               onChange={(e) => {
                 const newMap = new Map(page.resources);
                 newMap.set(zone, e.target.value);
                 setPage((prev) => ({ ...prev, resources: newMap }));
               }}
-              style={{ width: '100%', padding: '8px' }}
             >
               <option value="">Select Resource</option>
-              {resources.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name}
-                </option>
-              ))}
+              {resources
+                .filter((r) => r.type === ImageType || r.type === TextType)
+                .map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name}
+                  </option>
+                ))}
             </select>
           </div>
         ))}
 
-        {/* Scripts */}
         <label>Script</label>
         <select
           value={selectedScript}
           onChange={(e) => setSelectedScript(e.target.value)}
-          style={{ width: '100%', padding: '8px', marginBottom: '8px' }}
         >
           <option value="">Select Script</option>
           {resources
-            .filter((r) => r.type === ScriptType && !page.scripts.includes(r.id!))
+            .filter(
+              (r) => r.type === ScriptType && !page.scripts.includes(r.id!),
+            )
             .map((r) => (
               <option key={r.id} value={r.id}>
                 {r.name}
               </option>
             ))}
         </select>
-        <button
+        <Button
+        className={styles.outlineButton}
           onClick={() => {
             if (selectedScript) {
               setPage((prev) => ({
@@ -257,54 +300,39 @@ export default function PageEditor() {
               setSelectedScript('');
             }
           }}
-          style={{ width: '100%', padding: '8px', marginBottom: '16px' }}
         >
           Add Script
-        </button>
+        </Button>
 
-        {/* Added scripts */}
         {page.scripts.length > 0 && (
           <div>
             <strong>Added Scripts:</strong>
             {page.scripts.map((scriptId) => {
               const script = resources.find((r) => r.id === scriptId);
               return (
-                <div key={scriptId} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>{script?.name}</span>
-                  <button
+                <div key={scriptId} className={styles.scriptItem}>
+                  <span className={styles.scriptName}>{script?.name}</span>
+                  <Button
                     onClick={() =>
                       setPage((prev) => ({
                         ...prev,
                         scripts: prev.scripts.filter((id) => id !== scriptId),
                       }))
                     }
-                    style={{ backgroundColor: 'red', color: '#fff', border: 'none' }}
+                    className={styles.removeButton}
                   >
                     Remove
-                  </button>
+                  </Button>
                 </div>
               );
             })}
           </div>
         )}
 
-        {/* Actions */}
-        <div style={{ marginTop: '24px' }}>
-          <button
-            onClick={() => router.push('/page')}
-            style={{ width: '100%', padding: '8px', marginBottom: '8px' }}
-          >
-            Back
-          </button>
-          <button
-            onClick={handleClear}
-            style={{ width: '100%', padding: '8px', marginBottom: '8px' }}
-          >
-            Clear Form
-          </button>
-          <button onClick={handleSave} style={{ width: '100%', padding: '8px' }}>
-            Save Page
-          </button>
+        <div className={styles.editorActions}>
+          <Button className={styles.outlineButton} onClick={() => router.push('/page')}>Back to Pages</Button>
+          <Button className={styles.outlineButton} onClick={handleClear}>Clear Form</Button>
+          <Button className={styles.button} onClick={handleSave}>Save Page</Button>
         </div>
       </div>
       <Toaster />
