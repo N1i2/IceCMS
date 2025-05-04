@@ -17,10 +17,13 @@ export default function TemplatesPage() {
   const router = useRouter();
   
   useEffect(() => {
-    loadTemplates();
-  }, []);
+    const token = localStorage.getItem('token');
 
-  useEffect(() => {
+    if (!token) {
+      router.push('/login'); 
+    }
+    
+    loadTemplates();
     document.title = 'Templates';
   }, []);
 

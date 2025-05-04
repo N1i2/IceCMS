@@ -2,6 +2,7 @@ import axios from "axios";
 import { ResourceModel } from "@/app/models/resourceModel";
 import { TemplateModel } from "@/app/models/templateModel";
 import { PageModel } from "@/app/models/pageModel";
+import { UserModel } from "@/app/models/userModel";
 
 const api = axios.create({
   baseURL: "/api",
@@ -32,4 +33,13 @@ export const pageApi = {
   create: (data: PageModel) => api.post("/page", data),
   update: (id: string, data: PageModel) => api.put(`/page/${id}`, data),
   delete: (id: string) => api.delete(`/page/${id}`),
+};
+
+export const userApi = {
+  getAll: () => api.get<UserModel[]>("/user"),
+  getById: (id: string) => api.get<UserModel>(`/user/${id}`),
+  create: (data: { email: string; password: string }) => api.post("/auth/register", data),
+  update: (id: string, data: Partial<UserModel>) => api.put<UserModel>(`/user/${id}`, data),
+  delete: (id: string) => api.delete(`/user/${id}`),
+  login: (data: { email: string; password: string }) => api.post<{ access_token: string }>("/auth/login", data),
 };

@@ -16,10 +16,13 @@ export default function PagesPage() {
   const router = useRouter();
 
   useEffect(() => {
-    loadPages();
-  }, []);
+    const token = localStorage.getItem('token');
 
-  useEffect(() => {
+    if (!token) {
+      router.push('/login'); 
+    }
+
+    loadPages();
     document.title = 'Pages';
   }, []);
 

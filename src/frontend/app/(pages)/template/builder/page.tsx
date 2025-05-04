@@ -18,12 +18,16 @@ export default function TemplateBuilderPage() {
   const [templateName, setTemplateName] = useState<string>("Template 1");
   const router = useRouter();
   const searchParams = useSearchParams();
-
+  
   useEffect(() => {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      router.push('/login'); 
+    }
+
     document.title = "Template Builder";
-  }, []);
-
-  useEffect(() => {
+    
     const id = searchParams.get("id");
       
     const editor = grapesjs.init({

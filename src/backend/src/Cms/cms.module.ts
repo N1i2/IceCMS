@@ -12,6 +12,12 @@ import { TemplateService } from '../template_module/template.service';
 import { PagesController } from '../page_module/pages.controller';
 import { PagesModule } from '../page_module/pages.module';
 import { PagesService } from '../page_module/pages.service';
+import { UserController } from  '../user_module/user.controller';
+import { UserModule } from      '../user_module/user.module';
+import { UserService } from     '../user_module/user.service';
+import { AuthController } from  '../auth/auth.controller';
+import { AuthModule } from      '../auth/auth.module';
+import { AuthService } from     '../auth/auth.service';
 
 @Module({
   imports: [
@@ -31,13 +37,23 @@ import { PagesService } from '../page_module/pages.service';
     PagesModule,
     TemplateModule,
     ResourcesModule,
+    UserModule,
+    AuthModule, 
   ],
   controllers: [
     CmsController,
     ResourcesController,
     TemplateController,
     PagesController,
+    UserController,
   ],
-  providers: [CmsService, ResourcesService, TemplateService, PagesService],
+  providers: [
+    CmsService,
+    ResourcesService,
+    TemplateService,
+    PagesService,
+    UserService,
+  ],
 })
 export class CmsModule {}
+

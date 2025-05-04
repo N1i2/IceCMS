@@ -17,10 +17,13 @@ export default function ResourcesPage() {
   const router = useRouter();
   
   useEffect(() => {
-    loadResources();
-  }, []);
+    const token = localStorage.getItem('token');
 
-  useEffect(() => {
+    if (!token) {
+      router.push('/login'); 
+    }
+    
+    loadResources();
     document.title = 'Resources';
   }, []);
 

@@ -41,6 +41,12 @@ export default function ResourceCreater() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      router.push('/login'); 
+    }
+    
     document.title = 'Resource Creator';
   }, []);
 
@@ -163,9 +169,16 @@ export default function ResourceCreater() {
       }
 
       sendSuccess('Success', 'Resource saved successfully!');
-    } catch (error) {
-      console.error('Error saving resource:', error);
-      sendError('Error', 'Failed to save resource');
+    } catch (error: any) {
+      if (error.message && error.message.toLowerCase().includes('timeout')) {
+        sendSuccess(
+          'Timeout',
+          'The file is too large or the operation took too long. Please wait a bit and try again.',
+        );
+      } else {
+        console.error('Error saving resource:', error);
+        sendError('Error', 'Failed to save resource');
+      }
     } finally {
       setIsLoading(false);
     }

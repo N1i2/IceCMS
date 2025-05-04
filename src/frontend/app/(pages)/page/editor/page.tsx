@@ -10,7 +10,6 @@ import { ResourceModel } from '@/app/models/resourceModel';
 import { TemplateModel } from '@/app/models/templateModel';
 import styles from './page.module.css';
 import { Button } from '@/components/ui/button';
-import { resourceApi } from '@/app/services/api';
 import {
   ImageType,
   ScriptType,
@@ -37,6 +36,12 @@ export default function PageEditor() {
   const [previewHtml, setPreviewHtml] = useState<string>('');
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      router.push('/login'); 
+    }
+
     document.title = 'Page Editor';
 
     const fetchData = async () => {
