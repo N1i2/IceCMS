@@ -105,7 +105,7 @@ export default function TemplateBuilderPage() {
       editorRef.current?.setStyle(templateCss);
       setTemplateName(response.data.name);
     } catch (err: any) {
-      sendError('Failed to load templates.', 'Please try again');
+      sendError('Failed to load templates.', `Please try again ${err.message}`);
     } 
   };
 
@@ -135,8 +135,8 @@ export default function TemplateBuilderPage() {
         sendError('Template name already exists', 'Please choose a different name');
         return;
       }
-    } catch (error) {
-      sendError('Error', 'Something wrong');
+    } catch (err: any) {
+      sendError('Error', `Something wrong ${err.message}`);
       return;
     }
 

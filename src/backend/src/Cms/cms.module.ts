@@ -18,6 +18,8 @@ import { UserService } from     '../user_module/user.service';
 import { AuthController } from  '../auth/auth.controller';
 import { AuthModule } from      '../auth/auth.module';
 import { AuthService } from     '../auth/auth.service';
+import { PageViewController } from 'src/page_module/page.view.controller';
+import { PagesViewService } from 'src/page_module/pages.view.service';
 
 @Module({
   imports: [
@@ -46,6 +48,7 @@ import { AuthService } from     '../auth/auth.service';
     TemplateController,
     PagesController,
     UserController,
+    PageViewController,
   ],
   providers: [
     CmsService,
@@ -53,6 +56,7 @@ import { AuthService } from     '../auth/auth.service';
     TemplateService,
     PagesService,
     UserService,
+    PagesViewService,
   ],
 })
 export class CmsModule {}

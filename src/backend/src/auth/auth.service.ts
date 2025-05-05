@@ -24,6 +24,7 @@ export class AuthService {
     if (await bcrypt.compare(password, user.passwordHash)) {
       return user;
     }
+    
     return null;
   }
 

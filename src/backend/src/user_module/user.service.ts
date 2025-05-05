@@ -59,7 +59,7 @@ export class UserService {
     }
 
     if (userDto.password) {
-      userDto.password= await hashPassword(userDto.password);
+      userDto.password = await hashPassword(userDto.password);
     } else {
       delete userDto.password;
     }

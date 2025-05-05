@@ -8,6 +8,7 @@ export interface Page extends Document {
   templateId: string;
   resources: Map<string, string>;
   scripts: string[];
+  rawHtml: string;
   creater: string;
 }
 
@@ -19,6 +20,7 @@ export const PageSchema = new Schema<Page>(
     templateId: { type: String, required: true },
     scripts: { type: [String], require: true },
     resources: { type: Map, of: String, require: true },
+    rawHtml: { type: String, required: true },
     creater: { type: String, required: true },
   },
   { timestamps: true },

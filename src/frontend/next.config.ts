@@ -5,14 +5,19 @@ const nextConfig: NextConfig = {
     const isProduction = process.env.NODE_ENV === "production";
     return [
       {
-        source: "/api/:path*", // catch anything under /api
+        source: "/api/:path*", 
         destination: isProduction
-          ? "https://backend:3001/:path*" // production backend URL
-          : "http://localhost:3001/:path*", // local backend for development
+          ? "https://backend:3001/:path*" 
+          : "http://localhost:3001/:path*", 
+      },
+      {
+        source: "/p/:path*", 
+        destination: isProduction
+          ? "https://backend:3001/:path*" 
+          : "http://localhost:3001/:path*", 
       },
     ];
   },
-  /* config options here */
 };
 
 export default nextConfig;

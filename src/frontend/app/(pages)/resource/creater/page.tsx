@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { sendSuccess, sendError } from '@/helpModule/Massages';
 import Image from 'next/image';
@@ -34,7 +34,6 @@ export default function ResourceCreater() {
     value: '',
     creater: 1,
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<{ name?: string; file?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -63,9 +62,6 @@ export default function ResourceCreater() {
             value: loadedResource.value,
             creater: loadedResource.creater,
           });
-          if (loadedResource.type === ImageType) {
-            setImageFile(null);
-          }
         } catch (error) {
           console.error('Failed to load resource', error);
         }
@@ -96,7 +92,6 @@ export default function ResourceCreater() {
       };
 
       reader.readAsDataURL(file);
-      setImageFile(file);
       setErrors((prev) => ({ ...prev, file: undefined }));
     }
   };
@@ -108,7 +103,6 @@ export default function ResourceCreater() {
       value: '',
       creater: 1,
     });
-    setImageFile(null);
     setErrors({});
 
     sendSuccess('Success', 'Resource clear successfully!');
@@ -218,7 +212,6 @@ export default function ResourceCreater() {
                   type: value as ResourceType,
                   value: '',
                 }));
-                setImageFile(null);
               }}
             >
               <SelectTrigger

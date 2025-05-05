@@ -10,6 +10,7 @@ import { ResourceModel } from '@/app/models/resourceModel';
 import { TemplateModel } from '@/app/models/templateModel';
 import styles from './page.module.css';
 import { Button } from '@/components/ui/button';
+import { generateRawHtml } from './pageGenerator';
 import {
   ImageType,
   ScriptType,
@@ -57,10 +58,6 @@ export default function PageEditor() {
       }
     };
 
-    fetchData();
-  }, []);
-
-  useEffect(() => {
     const id = searchParams.get('id');
     if (!id) return;
 
@@ -78,11 +75,18 @@ export default function PageEditor() {
     };
 
     loadPage();
-  }, [searchParams]);
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    updatePreview();
+  }, [page, templates, resources]);
 
   const selectedTemplate = templates.find((t) => t.id === page.templateId);
 
   const updatePreview = () => {
+    console.log('call update preview');
     if (!selectedTemplate) return;
 
     const parser = new DOMParser();
@@ -101,7 +105,6 @@ export default function PageEditor() {
       if (resource) {
         if (resource.type === ImageType) {
           const img = doc.createElement('img');
-          console.log(resource.value);
           img.src = resource.value;
           img.style.maxWidth = '100%';
           zoneElement.innerHTML = '';
@@ -114,12 +117,20 @@ export default function PageEditor() {
       }
     });
 
+    page.scripts.forEach((scriptId) => {
+      const scriptResource = resources.find(
+        (r) => r.id === scriptId && r.type === ScriptType,
+      );
+      if (scriptResource) {
+        const scriptEl = document.createElement('script');
+        scriptEl.type = 'text/javascript';
+        scriptEl.textContent = `(function(){${scriptResource.value}})()`;
+        document.body.appendChild(scriptEl);
+      }
+    });
+
     setPreviewHtml(doc.body.innerHTML);
   };
-
-  useEffect(() => {
-    updatePreview();
-  }, [page.templateId, page.resources, templates, resources]);
 
   const isValidPage = () => {
     if (!page.pageId) {
@@ -173,6 +184,7 @@ export default function PageEditor() {
       const payload = {
         ...page,
         resources: Object.fromEntries(page.resources),
+        rawHtml: generateRawHtml(previewHtml, selectedTemplate?.templateCss || '', page.scripts.map((s) => resources.find(r => r.id === s)?.value || '')),
       };
 
       const idParam = searchParams.get('id');
@@ -210,7 +222,7 @@ export default function PageEditor() {
   return (
     <div className={styles.editorContainer}>
       <div className={styles.editorPreview}>
-        <h1>Page Preview</h1>
+        <h1 className={styles.editorTitle}>Page Preview</h1>
         <div className={styles.editorPreviewContent}>
           {selectedTemplate?.templateCss && (
             <style

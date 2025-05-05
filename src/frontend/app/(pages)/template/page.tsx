@@ -34,7 +34,7 @@ export default function TemplatesPage() {
       const data = await templateApi.getAll();
       setTemplates(data.data);
     } catch (err: any) {
-      setError('Failed to load templates.');
+      setError(`Failed to load templates. ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -51,7 +51,7 @@ export default function TemplatesPage() {
         `Template with name \"${template?.name}\" deleted successfully!`,
       );
     } catch (err: any) {
-      setError('Failed to delete template.');
+      setError(`Failed to delete template. ${err.message}`);
     } finally {
       setLoadingRows((prev) => prev.filter((rowId) => rowId !== id));
     }

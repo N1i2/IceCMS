@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { pageApi } from '@/app/services/api';
 import { PageModel } from '@/app/models/pageModel';
-import { sendSuccess } from '@/helpModule/Massages';
+import { sendSuccess, sendError } from '@/helpModule/Massages';
 import styles from './page.module.css';
 import { Button } from '@/components/ui/button';
 import { Toaster } from 'sonner';
@@ -12,7 +12,6 @@ import { Toaster } from 'sonner';
 export default function PagesPage() {
   const [pages, setPages] = useState<PageModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -28,12 +27,11 @@ export default function PagesPage() {
 
   const loadPages = async () => {
     setLoading(true);
-    setError(null);
     try {
       const data = await pageApi.getAll();
       setPages(data.data);
     } catch (err: any) {
-      setError('Failed to load pages.');
+      sendError('Error', `Failed to get page. ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -49,7 +47,7 @@ export default function PagesPage() {
         `Page with name \"${page?.name}\" deleted successfully!`,
       );
     } catch (err: any) {
-      setError('Failed to delete page.');
+      sendError('Error', `Failed to delete page. ${err.message}`);
     }
   };
 

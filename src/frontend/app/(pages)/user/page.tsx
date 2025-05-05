@@ -43,7 +43,7 @@ export default function UsersPage() {
       );
       setUsers(filteredUsers);
     } catch (err: any) {
-      setError('Failed to load users.');
+      setError(`Failed to load users: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -59,7 +59,7 @@ export default function UsersPage() {
         `User has been ${!currentLock ? 'locked' : 'unlocked'} successfully!`,
       );
     } catch (err: any) {
-      sendError('Error', 'Failed to update lock status.');
+      sendError('Error', `Failed to update lock status. ${err.message}`);
     } finally {
       setLoadingRows((prev) => prev.filter((rowId) => rowId !== id));
     }
@@ -73,7 +73,7 @@ export default function UsersPage() {
       loadUsers();
       sendSuccess('Success', 'Password reset successfully!');
     } catch (err: any) {
-      sendError('Error', 'Failed to reset password.');
+      sendError('Error', `Failed to reset password. ${err.message}`);
     } finally {
       setLoadingRows((prev) => prev.filter((rowId) => rowId !== id));
     }
@@ -92,7 +92,7 @@ export default function UsersPage() {
         } administrator rights successfully!`,
       );
     } catch (err: any) {
-      sendError('Error', 'Failed to update administrator rights.');
+      sendError('Error', `Failed to update administrator rights. ${err.message}`);
     } finally {
       setLoadingRows((prev) => prev.filter((rowId) => rowId !== id));
     }

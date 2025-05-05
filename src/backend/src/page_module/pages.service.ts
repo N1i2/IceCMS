@@ -5,10 +5,11 @@ import { NotFoundException } from '@nestjs/common';
 import { v7 as uuidv7 } from 'uuid';
 import { CreateUpdatePageDto } from './dto/CreateUpdatePageDto';
 import { createPageDto, PageDto } from './dto/PageDto';
+import { Page } from './schema/pages.schema';
 
 @Injectable()
 export class PagesService {
-  constructor(@InjectModel('Page') private readonly pageModel: Model<PageDto>) {}
+  constructor(@InjectModel('Page') private readonly pageModel: Model<Page>) {}
 
   async findAll(): Promise<PageDto[]> {
     const pages = await this.pageModel.find().exec();

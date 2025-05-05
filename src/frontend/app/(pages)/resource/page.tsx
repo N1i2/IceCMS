@@ -34,7 +34,7 @@ export default function ResourcesPage() {
       const data = await resourceApi.getAll();
       setResources(data.data);
     } catch (err: any) {
-      setError('Failed to load resources.');
+      setError(`Failed to load resources. ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -51,7 +51,7 @@ export default function ResourcesPage() {
         `Resource with name \"${resource?.name}\" deleted successfully!`,
       );
     } catch (err: any) {
-      setError('Failed to delete resource.');
+      setError(`Failed to delete resource. ${err.message}`);
     } finally {
       setLoadingRows((prev) => prev.filter((rowId) => rowId !== id));
     }
