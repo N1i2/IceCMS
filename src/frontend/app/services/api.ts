@@ -41,5 +41,6 @@ export const userApi = {
   create: (data: { email: string; password: string }) => api.post("/auth/register", data),
   update: (id: string, data: Partial<UserModel>) => api.put<UserModel>(`/user/${id}`, data),
   delete: (id: string) => api.delete(`/user/${id}`),
-  login: (data: { email: string; password: string }) => api.post<{ access_token: string }>("/auth/login", data),
+  login: (data: { email: string; password: string; role: string }) =>
+    api.post<{ access_token: string }>("/auth/login", data),
 };

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import userApi from '@/app/services/api';
-import { UserRole } from './const/userRoles';
+import { UserRole } from '../user/const/userRoles';
 import { sendError } from '@/helpModule/Massages';
 import { Toaster } from 'sonner';
 
@@ -18,23 +18,37 @@ export default function LoginPage() {
   
     try {
       let response;
-
+  
       if (isRegister) {
-        response = await userApi.post('/auth/register', { email, password, role: UserRole });
+        response = await userApi.post('/auth/register', {
+          email,
+          password,
+          lock: false,
+          role: UserRole,
+        });
       } else {
-        response = await userApi.post('/auth/login', { email, password, role: UserRole });
+        response = await userApi.post('/auth/login', {
+          email,
+          password,
+        });
       }
   
       const token = response.data.access_token;
+      const role = response.data.user?.role || UserRole
+  
       if (token) {
         localStorage.setItem('token', token);
+        localStorage.setItem('userRole', role); 
       }
   
       router.push('/home');
     } catch (err: any) {
-      sendError('Error', 'Error: ' + (err.response?.data?.message || err.message));
+      sendError(
+        'Error',
+        'Error: ' + (err.response?.data?.message || err.message),
+      );
     }
-  };  
+  };
 
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
@@ -89,7 +103,7 @@ export default function LoginPage() {
           </button>
         </div>
       </div>
-      <Toaster/>
+      <Toaster />
     </div>
   );
 }

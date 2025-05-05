@@ -5,6 +5,7 @@ export interface UserDto {
   id: string;
   email: string;
   passwordHash: string;
+  lock: boolean;
   role: UserRoles;
 }
 
@@ -13,6 +14,7 @@ export function createUserDto(jsonSource: User): UserDto {
     id: jsonSource.id,
     email: jsonSource.email,
     passwordHash: jsonSource.passwordHash,
+    lock: jsonSource.lock,
     role: jsonSource.role,
   };
 }

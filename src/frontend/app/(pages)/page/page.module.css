@@ -41,6 +41,29 @@
   text-align: center;
 }
 
+.buttonBack {
+  position: absolute;
+  left: 2rem;
+  padding: 0.8rem 1.6rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: transparent;
+  color: var(--secondary-accent);
+  border: 1px solid var(--secondary-accent);
+  border-radius: 2rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.buttonBack:hover {
+  background-color: #00b8a935;
+}
+
+.buttonBack:active {
+  transform: scale(0.96);
+  background-color: #00998c;
+}
+
 .button {
   background-color: var(--secondary-accent);
   color: var(--primary-bg);
@@ -70,7 +93,7 @@
 }
 
 .changeButton:hover {
-  background-color: #00b8a9;
+  background-color: rgb(2, 130, 117);
 }
 
 .button:active {

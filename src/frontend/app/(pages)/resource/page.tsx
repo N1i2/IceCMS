@@ -60,6 +60,12 @@ export default function ResourcesPage() {
   return (
     <div>
       <div className={styles.header}>
+        <Button
+          onClick={() => router.push('/home')}
+          className={styles.buttonBack}
+        >
+          Go back to Home
+        </Button>
         <h1 className={styles.title}>Resources</h1>
         <Button
           onClick={() => router.push('/resource/creater')}

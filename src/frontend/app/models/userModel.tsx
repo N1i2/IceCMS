@@ -1,6 +1,7 @@
 export interface UserModel {
   id?: string;
   email: string;
-  passwordSash: string;
+  passwordHash: string;
+  lock: boolean;
   role: string;
 }

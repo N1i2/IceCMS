@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { pageApi } from '@/app/services/api';
 import { PageModel } from '@/app/models/pageModel';
 import { sendSuccess } from '@/helpModule/Massages';
-import styles from './page.module.css'; 
+import styles from './page.module.css';
 import { Button } from '@/components/ui/button';
 import { Toaster } from 'sonner';
 
@@ -19,7 +19,7 @@ export default function PagesPage() {
     const token = localStorage.getItem('token');
 
     if (!token) {
-      router.push('/login'); 
+      router.push('/login');
     }
 
     loadPages();
@@ -56,8 +56,13 @@ export default function PagesPage() {
   return (
     <div>
       <div className={styles.header}>
+        <Button
+          onClick={() => router.push('/home')}
+          className={styles.buttonBack}
+        >
+          Go back to Home
+        </Button>
         <h1 className={styles.title}>Pages</h1>
-        {error && <div className={styles.error}>{error}</div>}
         <Button
           onClick={() => router.push('/page/editor')}
           className={styles.button}
@@ -116,7 +121,7 @@ export default function PagesPage() {
           )}
         </div>
       </div>
-      <Toaster/>
+      <Toaster />
     </div>
   );
 }

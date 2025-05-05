@@ -60,10 +60,15 @@ export default function TemplatesPage() {
   return (
     <div>
       <div className={styles.header}>
+        <Button
+         onClick={()=>router.push('/home')}
+         className={styles.buttonBack}>
+          Go back to Home
+        </Button>
         <h1 className={styles.title}>Templates</h1>
         <Button
           onClick={() => router.push('/template/builder')}
-          className={styles.button}
+          className={styles.createButton}
         >
           Create New Template
         </Button>

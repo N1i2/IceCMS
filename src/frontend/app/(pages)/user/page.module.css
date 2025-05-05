@@ -27,7 +27,6 @@
 }
 
 .header {
-  position: relative; 
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -40,44 +39,6 @@
   font-weight: 800;
   color: var(--light-text);
   text-align: center;
-}
-
-.buttonBack {
-  background-color: transparent;
-  color: var(--secondary-accent);
-  border: 1px solid var(--secondary-accent);
-  position: absolute;
-  left: 2rem;
-  padding: 0.8rem 1.6rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 2rem;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
-  height: 2.8rem;
-}
-
-.createButton {
-  background-color: var(--secondary-accent);
-  color: var(--primary-bg);
-  padding: 0.8rem 1.6rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 2rem;
-  cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
-  display: block;
-  margin: 2rem auto;
-}
-
-.createButton:hover {
-  background-color: #00b8a9;
-}
-
-.createButton:active {
-  transform: scale(0.96);
-  background-color: #00998c;
 }
 
 .button {
@@ -104,6 +65,30 @@
   transition: background-color 0.3s, transform 0.2s;
 }
 
+.buttonBack {
+  background-color: transparent;
+  color: var(--secondary-accent);
+  border: 1px solid var(--secondary-accent);
+  position: absolute;
+  left: 2rem;
+  padding: 0.8rem 1.6rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 2rem;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  height: 2.8rem;
+}
+
+.buttonBack:hover {
+  background-color: #00b8a935;
+}
+
+.buttonBack:active {
+  transform: scale(0.96);
+  background-color: #00998c;
+}
+
 .button:hover {
   background-color: #00b8a9;
 }
@@ -112,21 +97,12 @@
   background-color: rgb(2, 130, 117);
 }
 
-.buttonBack:hover {
-  background-color: #00b8a935;
-}
-
 .button:active {
   transform: scale(0.96);
   background-color: #00998c;
 }
 
 .changeButton:active {
-  transform: scale(0.96);
-  background-color: #00998c;
-}
-
-.buttonBack:active {
   transform: scale(0.96);
   background-color: #00998c;
 }

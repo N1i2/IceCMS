@@ -1,42 +1,54 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import api from "../../services/api";
-import { useParams } from "next/navigation";
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useRouter, useSearchParams } from 'next/navigation';
-import "tailwindcss";
+import { AdminRole } from '../user/const/userRoles';
+import { useRouter } from 'next/navigation';
+import 'tailwindcss';
 
 export default function HomePage() {
-  const [status, setStatus] = useState("");
   const router = useRouter();
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const role = localStorage.getItem('userRole');
 
     if (!token) {
-      router.push('/login'); 
+      router.push('/login');
+    } else {
+      setIsAdmin(role === AdminRole);
     }
   }, []);
 
-  const { slug } = useParams();
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+
+    router.push('/login');
+  };
 
   return (
-    <div>
-      <h1>Start Page</h1>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold">Start Page</h1>
 
-      <Button onClick={() => router.push('resource')}>
-        Resources
-      </Button>
-      <Button onClick={() => router.push('template')}>
-        Templates
-      </Button>
-      <Button onClick={() => router.push('page')}>
-        Pages
-      </Button>
-      <Button onClick={() => router.push('user')}>
-        Users
-      </Button>
+      <div className="space-x-4">
+        <Button onClick={() => router.push('resource')}>Resources</Button>
+        <Button onClick={() => router.push('template')}>Templates</Button>
+        <Button onClick={() => router.push('page')}>Pages</Button>
+
+        {isAdmin && <Button onClick={() => router.push('user')}>Users</Button>}
+      </div>
+
+      <div className="flex justify-between items-center mb-6">
+        <Button
+          onClick={handleLogout}
+          variant="outline"
+          className="text-red-600 border-red-600 hover:bg-red-50"
+        >
+          Log Out
+        </Button>
+      </div>
     </div>
   );
 }

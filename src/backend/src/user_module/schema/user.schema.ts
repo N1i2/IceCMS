@@ -5,6 +5,7 @@ export interface User extends Document {
   id: string;
   email: string;
   passwordHash: string;
+  lock: boolean;
   role: UserRoles;
 }
 
@@ -13,6 +14,7 @@ export const UserSchema = new Schema<User>(
     _id: { type: String },
     email: { type: String, required: true },
     passwordHash: { type: String, required: true },
+    lock: { type: Boolean, required: true },
     role: { type: String, required: true },
   },
   { timestamps: true },
