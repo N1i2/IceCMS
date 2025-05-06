@@ -36,6 +36,7 @@ export default function ResourceCreater() {
   });
   const [errors, setErrors] = useState<{ name?: string; file?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isUpdate, setIsUpdate] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -43,15 +44,17 @@ export default function ResourceCreater() {
     const token = localStorage.getItem('token');
 
     if (!token) {
-      router.push('/login'); 
+      router.push('/login');
     }
-    
+
     document.title = 'Resource Creator';
   }, []);
 
-  useEffect(() => {
+  useEffect(()=>{
     const id = searchParams.get('id');
     if (id) {
+      setIsUpdate(true);
+
       const loadResource = async () => {
         try {
           const response = await resourceApi.getById(id);
@@ -68,7 +71,7 @@ export default function ResourceCreater() {
       };
       loadResource();
     }
-  }, [searchParams]);
+  },[searchParams])
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -163,6 +166,8 @@ export default function ResourceCreater() {
       }
 
       sendSuccess('Success', 'Resource saved successfully!');
+
+      router.back();
     } catch (error: any) {
       if (error.message && error.message.toLowerCase().includes('timeout')) {
         sendSuccess(
@@ -200,39 +205,41 @@ export default function ResourceCreater() {
             {errors.name && <p className={styles.errorText}>{errors.name}</p>}
           </div>
 
-          <div className={styles.formGroup}>
-            <Label htmlFor="type" className={styles.label}>
-              Type
-            </Label>
-            <Select
-              value={resource.type}
-              onValueChange={(value) => {
-                setResource((prev) => ({
-                  ...prev,
-                  type: value as ResourceType,
-                  value: '',
-                }));
-              }}
-            >
-              <SelectTrigger
-                className={`${styles.input} ${styles.selectTrigger}`}
-                id="type"
+          {!isUpdate && (
+            <div className={styles.formGroup}>
+              <Label htmlFor="type" className={styles.label}>
+                Type
+              </Label>
+              <Select
+                value={resource.type}
+                onValueChange={(value) => {
+                  setResource((prev) => ({
+                    ...prev,
+                    type: value as ResourceType,
+                    value: '',
+                  }));
+                }}
               >
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent className={styles.selectContent}>
-                <SelectItem className={styles.selectItem} value={TextType}>
-                  Text / HTML / CSS
-                </SelectItem>
-                <SelectItem className={styles.selectItem} value={ImageType}>
-                  Image
-                </SelectItem>
-                <SelectItem className={styles.selectItem} value={ScriptType}>
-                  Script
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+                <SelectTrigger
+                  className={`${styles.input} ${styles.selectTrigger}`}
+                  id="type"
+                >
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent className={styles.selectContent}>
+                  <SelectItem className={styles.selectItem} value={TextType}>
+                    Text / HTML / CSS
+                  </SelectItem>
+                  <SelectItem className={styles.selectItem} value={ImageType}>
+                    Image
+                  </SelectItem>
+                  <SelectItem className={styles.selectItem} value={ScriptType}>
+                    Script
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {(resource.type === TextType || resource.type === ScriptType) && (
             <div className={styles.formGroup}>

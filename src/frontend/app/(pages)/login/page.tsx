@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import userApi from '@/app/services/api';
 import { UserRole } from '../user/const/userRoles';
@@ -12,6 +12,10 @@ export default function LoginPage() {
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  useEffect(() =>{
+    document.title = "Login";
+  },[])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

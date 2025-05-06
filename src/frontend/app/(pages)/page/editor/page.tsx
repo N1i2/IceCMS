@@ -58,6 +58,10 @@ export default function PageEditor() {
       }
     };
 
+    fetchData();
+  }, []);
+
+  useEffect(() => {
     const id = searchParams.get('id');
     if (!id) return;
 
@@ -75,9 +79,7 @@ export default function PageEditor() {
     };
 
     loadPage();
-
-    fetchData();
-  }, []);
+  }, [searchParams]);  
 
   useEffect(() => {
     updatePreview();
@@ -86,7 +88,6 @@ export default function PageEditor() {
   const selectedTemplate = templates.find((t) => t.id === page.templateId);
 
   const updatePreview = () => {
-    console.log('call update preview');
     if (!selectedTemplate) return;
 
     const parser = new DOMParser();
@@ -239,9 +240,13 @@ export default function PageEditor() {
         <input
           type="text"
           value={page.pageId}
+          // value={page.pageId.replace(' ', '_')}
           onChange={(e) =>
             setPage((prev) => ({ ...prev, pageId: e.target.value }))
           }
+          onBlur={(e) => {
+            setPage((prev) => ({ ...prev, pageId: e.target.value.replace(' ', '_') }));
+          }}
         />
         <label>Page Name</label>
         <input
@@ -349,7 +354,7 @@ export default function PageEditor() {
         <div className={styles.editorActions}>
           <Button className={styles.outlineButton} onClick={() => router.push('/page')}>Back to Pages</Button>
           <Button className={styles.outlineButton} onClick={handleClear}>Clear Form</Button>
-          <Button className={styles.button} onClick={handleSave}>Save Page</Button>
+          <Button className={styles.button} onClick={handleSave}>Page Render</Button>
         </div>
       </div>
       <Toaster />

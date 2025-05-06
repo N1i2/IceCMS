@@ -16,9 +16,17 @@ export default function HomePage() {
 
     if (!token) {
       router.push('/login');
-    } else {
-      setIsAdmin(role === AdminRole);
+      return; 
     }
+
+    if(role === AdminRole){
+      setIsAdmin(true);
+      document.title = "Admin Home";
+      return;
+    }
+
+    setIsAdmin(false);
+    document.title = "User Home";
   }, []);
 
   const handleLogout = () => {

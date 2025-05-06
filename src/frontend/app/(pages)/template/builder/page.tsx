@@ -150,15 +150,22 @@ export default function TemplateBuilderPage() {
     
     const currentTemplateId = searchParams.get("id");
 
+    const testZone = new Set(zones);
+    if(zones.length !== testZone.size) {  
+      sendError('Duplicate zone names', 'Please use unique zone names');
+      return;
+    }
+
     if(currentTemplateId) {
       await templateApi.update(currentTemplateId ,templateModel);
       sendSuccess('Congratulations', 'Template successfully updated');
-      router.push('/template');
+      router.back();
       return;
     }
 
     await templateApi.create(templateModel);
     sendSuccess('Congratulations', 'Template successfully created');
+    router.back();
   };
 
   return (

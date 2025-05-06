@@ -92,7 +92,10 @@ export default function UsersPage() {
         } administrator rights successfully!`,
       );
     } catch (err: any) {
-      sendError('Error', `Failed to update administrator rights. ${err.message}`);
+      sendError(
+        'Error',
+        `Failed to update administrator rights. ${err.message}`,
+      );
     } finally {
       setLoadingRows((prev) => prev.filter((rowId) => rowId !== id));
     }
