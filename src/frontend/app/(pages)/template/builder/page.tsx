@@ -190,10 +190,10 @@ export default function TemplateBuilderPage() {
         <h1 className={styles.title}>Template Builder</h1>
         <div className={styles.actions}>
           <Button
-            onClick={() => router.push('/template')}
+            onClick={() => router.back()}
             className={styles.secondaryButton}
           >
-            Back to Templates
+            Back
           </Button>
           <Button onClick={handlePublish} className={styles.primaryButton}>
             Publish Template

@@ -28,7 +28,7 @@ export default function PageEditor() {
     templateId: '',
     resources: new Map(),
     scripts: [],
-    creater: localStorage.getItem('userId') || '1',
+    creater: '', 
   });
 
   const [resources, setResources] = useState<ResourceModel[]>([]);
@@ -38,10 +38,13 @@ export default function PageEditor() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
     
-    if (!token) {
+    if (!token || !userId) {
       router.push('/login'); 
     }
+
+    setPage(prev => ({ ...prev, creater: userId || '' })); 
 
     document.title = 'Page Editor';
 
@@ -242,7 +245,7 @@ export default function PageEditor() {
           value={page.pageId}
           onChange={(e) =>
             setPage((prev) => ({ ...prev, pageId: e.target.value }))
-          }
+          } 
           onBlur={(e) => {
             setPage((prev) => ({ ...prev, pageId: e.target.value.replaceAll(' ', '_') }));
           }}
@@ -262,14 +265,23 @@ export default function PageEditor() {
             setPage((prev) => ({ ...prev, templateId: e.target.value }))
           }
         >
-          <option value="">Select Template</option>
+          <option value="" disabled>Select Template</option>
           {templates.map((t) => (
             <option key={t.id} value={t.id}>
               {t.name}
             </option>
           ))}
         </select>
-
+          { page.templateId && ( 
+              <Button className={styles.outlineButton}
+              onClick={() =>{
+                router.push(`/template/builder?id=${page.templateId}`)
+              }}
+              >
+                Change template
+              </Button>
+            )
+          }
         {selectedTemplate?.zones.map((zone) => (
           <div key={zone} className={styles.zoneRow}>
             <label>{zone}</label>

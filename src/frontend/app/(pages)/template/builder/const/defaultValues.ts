@@ -19,10 +19,6 @@ export const initialCss = `
 * {
   box-sizing: border-box;
 }
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-}
 h1 {
   color: darkblue;
 }
