@@ -5,7 +5,7 @@ import { CreateUpdateUserDto } from '../user_module/dto/CreateUpdateUserDto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
+  
   @Post('register')
   async register(@Body() dto: CreateUpdateUserDto) {
     return this.authService.register(dto);

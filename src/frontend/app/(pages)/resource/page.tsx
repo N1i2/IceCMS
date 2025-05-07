@@ -8,21 +8,22 @@ import { sendSuccess } from '@/helpModule/Massages';
 import styles from './page.module.css';
 import { Button } from '@/components/ui/button';
 import { Toaster } from 'sonner';
+import { ResourceType, TextType, ImageType, ScriptType } from '@/app/models/const/ConstantTypes';
 
-export default function ResourcesPage() {  
+export default function ResourcesPage() {
   const [resources, setResources] = useState<ResourceModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [loadingRows, setLoadingRows] = useState<string[]>([]);
+  const [search, setSearch] = useState('');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null);
+  const [typeFilter, setTypeFilter] = useState<'all' | ResourceType>('all');
+
   const router = useRouter();
-  
+
   useEffect(() => {
     const token = localStorage.getItem('token');
-
-    if (!token) {
-      router.push('/login'); 
-    }
-    
+    if (!token) router.push('/login');
     loadResources();
     document.title = 'Resources';
   }, []);
@@ -43,13 +44,10 @@ export default function ResourcesPage() {
   const handleDelete = async (id: string) => {
     setLoadingRows((prev) => [...prev, id]);
     try {
+      const resource = resources.find((r) => r.id === id);
       await resourceApi.delete(id);
-      const resource = resources.find((resource) => resource.id === id);
       loadResources();
-      sendSuccess(
-        'Congratulations',
-        `Resource with name \"${resource?.name}\" deleted successfully!`,
-      );
+      sendSuccess('Congratulations', `Resource "${resource?.name}" deleted successfully!`);
     } catch (err: any) {
       setError(`Failed to delete resource. ${err.message}`);
     } finally {
@@ -57,86 +55,127 @@ export default function ResourcesPage() {
     }
   };
 
+  const filteredResources = resources
+    .filter((resource) =>
+      resource.name.toLowerCase().includes(search.toLowerCase()),
+    )
+    .filter((resource) => {
+      if (typeFilter === 'all') return true;
+      return resource.type === typeFilter;
+    })
+    .sort((a, b) => {
+      if (sortDirection === 'asc') return a.name.localeCompare(b.name);
+      if (sortDirection === 'desc') return b.name.localeCompare(a.name);
+      return 0;
+    });
+
   return (
-    <div>
+    <div className={styles.page}>
+      <Toaster />
       <div className={styles.header}>
-        <Button
-          onClick={() => router.push('/home')}
-          className={styles.buttonBack}
-        >
+      <Button onClick={() => router.push('/home')} className={styles.backBtn}>
           Go back to Home
         </Button>
         <h1 className={styles.title}>Resources</h1>
         <Button
           onClick={() => router.push('/resource/creater')}
-          className={styles.button}
+          className={styles.actionBtn}
         >
-          Create New Resource
+          New Resource
         </Button>
       </div>
 
-      <div className="p-6">
-        {error && <div className={styles.error}>{error}</div>}
+      <div className={styles.controls}>
+        <input
+          type="text"
+          className={styles.searchInput}
+          placeholder="Search by name..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
 
-        <div className={styles.tableWrapper}>
-          {loading ? (
-            <p className="text-white text-center py-10">Loading resources...</p>
-          ) : (
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Type</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {resources.length > 0 ? (
-                  resources.map((resource) => (
-                    <tr key={resource.id} className={styles.fadeIn}>
-                      <td>{resource.name}</td>
-                      <td>{resource.type}</td>
-                      <td className="text-center">
-                        {loadingRows.includes(resource.id!) ? (
-                          <div className={styles.loadingIndicator}>
-                            Loading...
-                          </div>
-                        ) : (
-                          <div className={styles.actions}>
-                            <Button
-                              onClick={() =>
-                                router.push(
-                                  `/resource/creater?id=${resource.id}`,
-                                )
-                              }
-                              className={styles.changeButton}
-                            >
-                              Edit
-                            </Button>
-                            <Button
-                              onClick={() => handleDelete(resource.id!)}
-                              className={styles.changeButton}
-                            >
-                              Delete
-                            </Button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={3} className="text-center py-10 text-gray-400">
-                      No resources found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
+        <div className={styles.filters}>
+          <div>
+            <label>Sort:</label>
+            <select
+              value={sortDirection || ''}
+              onChange={(e) => setSortDirection(e.target.value as 'asc' | 'desc' | null)}
+            >
+              <option value="">None</option>
+              <option value="asc">A → Z</option>
+              <option value="desc">Z → A</option>
+            </select>
+          </div>
+          <div>
+            <label>Type:</label>
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value as any)}
+            >
+              <option value='all'>All</option>
+              <option value={TextType}>Text</option>
+              <option value={ImageType}>Image</option>
+              <option value={ScriptType}>Script</option>
+            </select>
+          </div>
         </div>
       </div>
-      <Toaster/>
+
+      {error && <div className={styles.error}>{error}</div>}
+
+      <div className={styles.tableWrapper}>
+        {loading ? (
+          <p className={styles.loading}>Loading resources...</p>
+        ) : (
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredResources.length ? (
+                filteredResources.map((resource) => (
+                  <tr key={resource.id} className={styles.fadeIn}>
+                    <td>{resource.name}</td>
+                    <td>{resource.type}</td>
+                    <td>
+                      {loadingRows.includes(resource.id!) ? (
+                        <span className={styles.loadingIndicator}>Processing...</span>
+                      ) : (
+                        <div className={styles.actions}>
+                          <Button
+                            onClick={() =>
+                              router.push(`/resource/creater?id=${resource.id}`)
+                            }
+                            className={styles.actionBtn}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            onClick={() => handleDelete(resource.id!)}
+                            className={styles.actionBtn}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={3} className={styles.noData}>
+                    No resources found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 }

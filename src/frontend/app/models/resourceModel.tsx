@@ -5,5 +5,5 @@ export interface ResourceModel {
   name: string; 
   type: ResourceType; 
   value: string; 
-  creater: number;
+  creater: string;
 }

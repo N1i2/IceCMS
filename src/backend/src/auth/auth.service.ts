@@ -4,6 +4,7 @@ import { UserService } from '../user_module/user.service';
 import * as bcrypt from 'bcrypt';
 import { UserDto } from '../user_module/dto/UserDto';
 import { CreateUpdateUserDto } from '../user_module/dto/CreateUpdateUserDto';
+import { UserRole } from '../user_module/const/userRoles';
 
 @Injectable()
 export class AuthService {
@@ -24,7 +25,7 @@ export class AuthService {
     if (await bcrypt.compare(password, user.passwordHash)) {
       return user;
     }
-    
+
     return null;
   }
 
@@ -41,7 +42,10 @@ export class AuthService {
   }
 
   async register(dto: CreateUpdateUserDto) {
-    const user = await this.usersService.create(dto);
-    return this.login(user);
+    return await this.usersService.create({
+      ...dto,
+      role: UserRole,
+      lock: false,
+    });
   }
 }

@@ -10,6 +10,7 @@ import {
 import { UserService } from './user.service';
 import { CreateUpdateUserDto } from './dto/CreateUpdateUserDto';
 import { UserDto } from './dto/UserDto';
+import { zip } from 'rxjs/operators';
 
 @Controller('user')
 export class UserController {
@@ -37,6 +38,7 @@ export class UserController {
   ): Promise<UserDto> {
     return this.userService.update(id, userDto);
   }
+  // updatePassword: (id: string, data: { password: string }) => api.put(`/user/${id}/password`, data),
 
   @Delete(':id')
   async delete(@Param('id') id: string): Promise<void> {

@@ -14,8 +14,8 @@ export const initialHtml = `
   </div>
 </body>
     `;
-    
-   export const initialCss = `
+
+export const initialCss = `
 * {
   box-sizing: border-box;
 }

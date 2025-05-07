@@ -1,10 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { v7 as uuidv7 } from 'uuid';
 import { CreateUpdateUserDto } from './dto/CreateUpdateUserDto';
 import { createUserDto, UserDto } from './dto/UserDto';
 import * as bcrypt from 'bcrypt';
+import { UserRole } from './const/userRoles';
 
 @Injectable()
 export class UserService {
@@ -26,29 +32,30 @@ export class UserService {
   }
 
   async create(userDto: CreateUpdateUserDto): Promise<UserDto> {
+    if (!userDto.password || userDto.password.trim().length === 0) {
+      throw new BadRequestException('Password is required.');
+    }
+
     const existingUser = await this.userModel
       .findOne({ email: userDto.email })
       .exec();
     if (existingUser) {
-      throw new NotFoundException(
+      throw new ConflictException(
         `User with email "${userDto.email}" already exists.`,
       );
     }
 
-    if (!userDto.password) {
-      throw new NotFoundException(`Password hash is required.`);
-    }
-
-    const passwordHash = await hashPassword(userDto.password!);
+    const hashedPassword = await hashPassword(userDto.password);
 
     const newUser = new this.userModel({
       _id: uuidv7(),
-      ...userDto,
-      passwordHash,
+      email: userDto.email,
+      passwordHash: hashedPassword,
+      role: userDto.role || UserRole,
+      lock: userDto.lock ?? false,
     });
 
     const savedUser = await newUser.save();
-
     return createUserDto(savedUser);
   }
 
@@ -84,7 +91,8 @@ export class UserService {
   }
 }
 
-async function hashPassword(passwordHash: string): Promise<string> {
-  const saltRounds = 10;
-  return await bcrypt.hash(passwordHash, saltRounds);
+async function hashPassword(password: string): Promise<string> {
+  const saltRounds = 15;
+  const salt = await bcrypt.genSalt(saltRounds);
+  return await bcrypt.hash(password, salt);
 }

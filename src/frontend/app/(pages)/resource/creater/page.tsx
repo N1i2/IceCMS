@@ -32,7 +32,7 @@ export default function ResourceCreater() {
     name: '',
     type: TextType,
     value: '',
-    creater: 1,
+    creater: localStorage.getItem('userId') || '1',
   });
   const [errors, setErrors] = useState<{ name?: string; file?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -104,7 +104,7 @@ export default function ResourceCreater() {
       name: '',
       type: TextType,
       value: '',
-      creater: 1,
+      creater: localStorage.getItem('userId') || '1',
     });
     setErrors({});
 

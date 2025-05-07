@@ -15,6 +15,15 @@ export default function UsersPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [loadingRows, setLoadingRows] = useState<string[]>([]);
+  const [search, setSearch] = useState('');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
+    null,
+  );
+  const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'admin'>('all');
+  const [lockedFilter, setLockedFilter] = useState<'all' | 'lock' | 'unlock'>(
+    'all',
+  );
+
   const router = useRouter();
 
   useEffect(() => {
@@ -23,14 +32,12 @@ export default function UsersPage() {
 
     if (!token) {
       router.push('/login');
-      return;
     } else if (role !== AdminRole) {
       router.push('/home');
-      return;
+    } else {
+      loadUsers();
+      document.title = 'Users';
     }
-
-    loadUsers();
-    document.title = 'Users';
   }, []);
 
   const loadUsers = async () => {
@@ -65,20 +72,6 @@ export default function UsersPage() {
     }
   };
 
-  const handleResetPassword = async (id: string) => {
-    setLoadingRows((prev) => [...prev, id]);
-    try {
-      const defaultPassword = 'default123';
-      await userApi.update(id, { passwordHash: defaultPassword });
-      loadUsers();
-      sendSuccess('Success', 'Password reset successfully!');
-    } catch (err: any) {
-      sendError('Error', `Failed to reset password. ${err.message}`);
-    } finally {
-      setLoadingRows((prev) => prev.filter((rowId) => rowId !== id));
-    }
-  };
-
   const handleAdminToggle = async (id: string, currentRole: string) => {
     setLoadingRows((prev) => [...prev, id]);
     try {
@@ -89,7 +82,7 @@ export default function UsersPage() {
         'Success',
         `User has been ${
           updatedRole === AdminRole ? 'granted' : 'revoked'
-        } administrator rights successfully!`,
+        } administrator rights!`,
       );
     } catch (err: any) {
       sendError(
@@ -101,88 +94,144 @@ export default function UsersPage() {
     }
   };
 
+  const filteredUsers = users
+    .filter((user) => user.email.toLowerCase().includes(search.toLowerCase()))
+    .filter((user) => {
+      if (roleFilter === 'admin') return user.role === AdminRole;
+      if (roleFilter === 'user') return user.role === UserRole;
+      return true;
+    })
+    .filter((user) => {
+      if (lockedFilter === 'lock') return user.lock === true;
+      if (lockedFilter === 'unlock') return user.lock === false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortDirection === 'asc') return a.email.localeCompare(b.email);
+      if (sortDirection === 'desc') return b.email.localeCompare(a.email);
+      return 0;
+    });
+
   return (
-    <div>
-      <div>
-        <Button
-          onClick={() => router.push('/home')}
-          className={styles.buttonBack}
-        >
+    <div className={styles.page}>
+      <Toaster />
+      <header className={styles.header}>
+        <Button onClick={() => router.push('/home')} className={styles.backBtn}>
           Go back to Home
         </Button>
-        <h1 className={styles.title}>Users</h1>
-      </div>
+        <h1 className={styles.title}>User Management</h1>
+      </header>
 
-      <div className="p-6">
-        {error && <div className={styles.error}>{error}</div>}
+      <section className={styles.controls}>
+        <input
+          type="text"
+          className={styles.searchInput}
+          placeholder="Search by email..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <div className={styles.filters}>
+          <div>
+            <label>Sort:</label>
+            <select
+              value={sortDirection || ''}
+              onChange={(e) =>
+                setSortDirection(e.target.value as 'asc' | 'desc' | null)
+              }
+            >
+              <option value="">None</option>
+              <option value="asc">A → Z</option>
+              <option value="desc">Z → A</option>
+            </select>
+          </div>
+          <div>
+            <label>Role:</label>
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value as any)}
+            >
+              <option value="all">All</option>
+              <option value="user">Users</option>
+              <option value="admin">Admins</option>
+            </select>
+          </div>
+          <div>
+            <label>Lock:</label>
+            <select
+              value={lockedFilter}
+              onChange={(e) => setLockedFilter(e.target.value as any)}
+            >
+              <option value="all">All</option>
+              <option value="lock">Locked</option>
+              <option value="unlock">Unlocked</option>
+            </select>
+          </div>
+        </div>
+      </section>
 
-        <div className={styles.tableWrapper}>
-          {loading ? (
-            <p className="text-white text-center py-10">Loading users...</p>
-          ) : (
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.length > 0 ? (
-                  users.map((user) => (
-                    <tr key={user.id} className={styles.fadeIn}>
-                      <td>{user.email}</td>
-                      <td>{user.role}</td>
-                      <td className="text-center">
-                        {loadingRows.includes(user.id!) ? (
-                          <div className={styles.loadingIndicator}>
-                            Loading...
-                          </div>
-                        ) : (
-                          <div className={styles.actions}>
-                            <Button
-                              onClick={() =>
-                                handleLockToggle(user.id!, user.lock)
-                              }
-                              className={styles.changeButton}
-                            >
-                              {user.lock ? 'Unlock' : 'Lock'}
-                            </Button>
-                            <Button
-                              onClick={() => handleResetPassword(user.id!)}
-                              className={styles.changeButton}
-                            >
-                              Reset Password
-                            </Button>
-                            <Button
-                              onClick={() =>
-                                handleAdminToggle(user.id!, user.role)
-                              }
-                              className={styles.changeButton}
-                            >
-                              {user.role === AdminRole
-                                ? 'Revoke Admin Rights'
-                                : 'Grant Admin Rights'}
-                            </Button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={3} className="text-center py-10 text-gray-400">
-                      No users found.
+      {error && <div className={styles.error}>{error}</div>}
+
+      <section className={styles.tableWrapper}>
+        {loading ? (
+          <p className={styles.loading}>Loading users...</p>
+        ) : (
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredUsers.length ? (
+                filteredUsers.map((user) => (
+                  <tr key={user.id} className={styles.fadeIn}>
+                    <td>{user.email}</td>
+                    <td>{user.role}</td>
+                    <td>{user.lock ? 'Locked' : 'Unlocked'}</td>
+                    <td>
+                      {loadingRows.includes(user.id!) ? (
+                        <span className={styles.loadingIndicator}>
+                          Processing...
+                        </span>
+                      ) : (
+                        <div className={styles.actions}>
+                          <Button
+                            onClick={() =>
+                              handleLockToggle(user.id!, user.lock)
+                            }
+                            className={styles.actionBtn}
+                          >
+                            {user.lock ? 'Unlock' : 'Lock'}
+                          </Button>
+                          <Button
+                            onClick={() =>
+                              handleAdminToggle(user.id!, user.role)
+                            }
+                            className={styles.actionBtn}
+                          >
+                            {user.role === AdminRole
+                              ? 'Revoke Admin'
+                              : 'Grant Admin'}
+                          </Button>
+                        </div>
+                      )}
                     </td>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-      <Toaster />
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className={styles.noData}>
+                    No users found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </section>
     </div>
   );
 }

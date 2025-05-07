@@ -3,10 +3,11 @@ import { ResourceModel } from "@/app/models/resourceModel";
 import { TemplateModel } from "@/app/models/templateModel";
 import { PageModel } from "@/app/models/pageModel";
 import { UserModel } from "@/app/models/userModel";
+import { projectUpdate } from "next/dist/build/swc/generated-native";
 
 const api = axios.create({
   baseURL: "/api",
-  timeout: 10000,
+  timeout: 60000,
 });
 
 export default api;
@@ -42,5 +43,5 @@ export const userApi = {
   update: (id: string, data: Partial<UserModel>) => api.put<UserModel>(`/user/${id}`, data),
   delete: (id: string) => api.delete(`/user/${id}`),
   login: (data: { email: string; password: string; role: string }) =>
-    api.post<{ access_token: string }>("/auth/login", data),
+    api.post<{ access_token: string, user: UserModel }>("/auth/login", data),
 };

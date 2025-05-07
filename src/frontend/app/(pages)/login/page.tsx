@@ -2,49 +2,84 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import userApi from '@/app/services/api';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { userApi } from '@/app/services/api';
 import { UserRole } from '../user/const/userRoles';
-import { sendError } from '@/helpModule/Massages';
+import { sendSuccess, sendError } from '@/helpModule/Massages';
 import { Toaster } from 'sonner';
+import styles from './page.module.css';
+
+const formSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(5),
+});
 
 export default function LoginPage() {
   const router = useRouter();
   const [isRegister, setIsRegister] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
 
-  useEffect(() =>{
-    document.title = "Login";
-  },[])
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-  
+  useEffect(() => {
+    document.title = 'Login';
+  }, []);
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       let response;
-  
+
+      console.log({...values,
+        lock: false,
+        role: UserRole,});
+
       if (isRegister) {
-        response = await userApi.post('/auth/register', {
-          email,
-          password,
-          lock: false,
-          role: UserRole,
+        console.log('start register')
+        response = await userApi.create({
+          ...values
         });
-      } else {
-        response = await userApi.post('/auth/login', {
-          email,
-          password,
-        });
+        console.log('end register')
       }
-  
+
+      console.log(response);
+
+      response = await userApi.login({
+        ...values,
+        role: UserRole,
+      });
+
+      console.log(response);
+
       const token = response.data.access_token;
-      const role = response.data.user?.role || UserRole
-  
+      const role = response.data.user?.role || UserRole;
+      const userId = response.data.user?.id;
+
       if (token) {
         localStorage.setItem('token', token);
-        localStorage.setItem('userRole', role); 
+        localStorage.setItem('userRole', role);
+        if (userId) {
+          localStorage.setItem('userId', userId);
+        }
       }
-  
+
       router.push('/home');
     } catch (err: any) {
       sendError(
@@ -55,58 +90,75 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-4 bg-white rounded shadow">
-        <h1 className="text-2xl font-bold text-center">
-          {isRegister ? 'Register' : 'Login'}
-        </h1>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full p-2 border border-gray-300 rounded"
-              placeholder="you@example.com"
-            />
+    <div className={styles.container}>
+      <Card className={styles.card}>
+        <CardHeader className={styles.cardHeader}>
+          <CardTitle className={styles.cardTitle}>
+            {isRegister ? 'REGISTER' : 'LOGIN'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className={styles.cardContent}>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className={styles.form}
+            >
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem className={styles.formItem}>
+                    <FormLabel className={styles.formLabel}>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        className={styles.input}
+                        type="email"
+                        placeholder="you@example.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className={styles.formMessage} />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem className={styles.formItem}>
+                    <FormLabel className={styles.formLabel}>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        className={styles.input}
+                        type="password"
+                        placeholder="********"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className={styles.formMessage} />
+                  </FormItem>
+                )}
+              />
+              <Button className={styles.button} type="submit">
+                {isRegister ? 'Register' : 'Login'}
+              </Button>
+            </form>
+          </Form>
+
+          <div className={`${styles.textCenter} ${styles.mt4}`}>
+            <Button
+              variant="link"
+              onClick={() => setIsRegister(!isRegister)}
+              className={styles.linkButton}
+            >
+              {isRegister
+                ? 'Have an account? Login'
+                : "Don't have an account? Register"}
+            </Button>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full p-2 border border-gray-300 rounded"
-              placeholder="********"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full py-2 text-white bg-blue-600 rounded hover:bg-blue-700"
-          >
-            {isRegister ? 'Register' : 'Login'}
-          </button>
-        </form>
-        <div className="text-center">
-          <button
-            onClick={() => {
-              setIsRegister(!isRegister);
-            }}
-            className="mt-4 text-sm text-blue-600 hover:underline"
-          >
-            {isRegister
-              ? 'Have an account? Login'
-              : "Don't have an account? Register"}
-          </button>
-        </div>
-      </div>
+
+        </CardContent>
+      </Card>
       <Toaster />
     </div>
   );

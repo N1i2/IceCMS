@@ -4,5 +4,5 @@ export interface TemplateModel {
     templateHtml: string;
     templateCss: string;
     zones: string[];
-    creater: number;
+    creater: string;
   }  

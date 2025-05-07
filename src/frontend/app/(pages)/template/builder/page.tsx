@@ -21,15 +21,13 @@ export default function TemplateBuilderPage() {
   
   useEffect(() => {
     const token = localStorage.getItem('token');
-
     if (!token) {
       router.push('/login'); 
     }
 
     document.title = "Template Builder";
-    
     const id = searchParams.get("id");
-      
+
     const editor = grapesjs.init({
       container: "#gjs-editor",
       plugins: [baseBlocksPlugin],
@@ -40,10 +38,13 @@ export default function TemplateBuilderPage() {
       fromElement: false,
       storageManager: false,
     });
-    
+
     editorRef.current = editor;
 
-    if (id) {
+    if (!id) {
+      editor.setComponents(`<div class="body-wrapper">${initialHtml}</div>`);
+      editor.setStyle(initialCss + '\n.body-wrapper { min-height: 100vh; }');
+    } else {
       loadTemplate(id);
     }
 
@@ -56,12 +57,12 @@ export default function TemplateBuilderPage() {
         defaults: {
           tagName: "div",
           draggable: true,
-          droppable: false,  
+          droppable: false,
           attributes: { "zone-name": "" },
           style: {
             minHeight: "80px",
             padding: "4px",
-            "text-align": "center",
+            textAlign: "center",
             border: "1px dashed #ccc",
           },
           components: "[ZONE CONTENT]",
@@ -90,11 +91,6 @@ export default function TemplateBuilderPage() {
 
     bm.remove("video");
     bm.remove("map");
-    
-    if (!id) {
-      editor.setComponents(initialHtml);
-      editor.setStyle(initialCss);
-    }
   }, []);
 
   const loadTemplate = async (id: string) => {
@@ -106,37 +102,57 @@ export default function TemplateBuilderPage() {
       setTemplateName(response.data.name);
     } catch (err: any) {
       sendError('Failed to load templates.', `Please try again ${err.message}`);
-    } 
+    }
   };
 
   const handlePublish = async () => {
-    const html = editorRef.current?.getHtml();
-    const css = editorRef.current?.getCss();
-    
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    const html = editor.getHtml();
+    let css = editor.getCss();
+
+    const wrapper = editor.getWrapper();
+    const bodyStyles = wrapper?.getStyle();
+
+    if (bodyStyles && Object.keys(bodyStyles).length > 0) {
+      let bodyCss = "body {";
+      for (const [key, value] of Object.entries(bodyStyles)) {
+        bodyCss += `${key}: ${value};`;
+      }
+      bodyCss += "}\n";
+      css += "\n" + bodyCss;
+    }
+
     const parser = new DOMParser();
     const doc = parser.parseFromString(html || "", "text/html");
-    
     const zoneElements = doc.querySelectorAll("[zone-name]");
     const zones: string[] = [];
-    
+
     zoneElements.forEach((el) => {
       const zoneName = el.getAttribute("zone-name");
-      if (zoneName) {
-        zones.push(zoneName);
-      }
+      if (zoneName) zones.push(zoneName);
     });
-    
+
     try {
-      const {data: templates} = await templateApi.getAll();
+      const { data: templates } = await templateApi.getAll();
       const duplicate = templates.find((template: TemplateModel) => template.name === templateName)
         && searchParams.get("id") !== templates.find((res: { name: string }) => res.name === templateName)?.id;
-      
+
       if (duplicate) {
         sendError('Template name already exists', 'Please choose a different name');
         return;
       }
     } catch (err: any) {
-      sendError('Error', `Something wrong ${err.message}`);
+      sendError('Error', `Something went wrong: ${err.message}`);
+      return;
+    }
+
+    const currentTemplateId = searchParams.get("id");
+    const testZone = new Set(zones);
+
+    if (zones.length !== testZone.size) {
+      sendError('Duplicate zone names', 'Please use unique zone names');
       return;
     }
 
@@ -145,27 +161,17 @@ export default function TemplateBuilderPage() {
       templateHtml: html || "",
       templateCss: css || "",
       zones: zones,
-      creater: 1,
+      creater: localStorage.getItem('userId') || '1',
     };
-    
-    const currentTemplateId = searchParams.get("id");
 
-    const testZone = new Set(zones);
-    if(zones.length !== testZone.size) {  
-      sendError('Duplicate zone names', 'Please use unique zone names');
-      return;
-    }
-
-    if(currentTemplateId) {
-      await templateApi.update(currentTemplateId ,templateModel);
+    if (currentTemplateId) {
+      await templateApi.update(currentTemplateId, templateModel);
       sendSuccess('Congratulations', 'Template successfully updated');
-      router.back();
       return;
     }
 
     await templateApi.create(templateModel);
     sendSuccess('Congratulations', 'Template successfully created');
-    router.back();
   };
 
   return (

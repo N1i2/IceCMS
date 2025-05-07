@@ -28,7 +28,7 @@ export default function PageEditor() {
     templateId: '',
     resources: new Map(),
     scripts: [],
-    creater: '1',
+    creater: localStorage.getItem('userId') || '1',
   });
 
   const [resources, setResources] = useState<ResourceModel[]>([]);
@@ -214,7 +214,7 @@ export default function PageEditor() {
       templateId: '',
       resources: new Map(),
       scripts: [],
-      creater: '1',
+      creater: localStorage.getItem('userId') || '1',
     });
     setPreviewHtml('');
     sendSuccess('Form cleared', 'You can start fresh');
@@ -240,12 +240,11 @@ export default function PageEditor() {
         <input
           type="text"
           value={page.pageId}
-          // value={page.pageId.replace(' ', '_')}
           onChange={(e) =>
             setPage((prev) => ({ ...prev, pageId: e.target.value }))
           }
           onBlur={(e) => {
-            setPage((prev) => ({ ...prev, pageId: e.target.value.replace(' ', '_') }));
+            setPage((prev) => ({ ...prev, pageId: e.target.value.replaceAll(' ', '_') }));
           }}
         />
         <label>Page Name</label>

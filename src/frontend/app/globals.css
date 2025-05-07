@@ -1,9 +1,11 @@
-@import "tailwindcss";
+@import "tailwindcss/preflight"; 
+@import "tailwindcss/utilities"; 
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --card-bg: #1a1a1d;
   --input-bg: #1a1a1a;
   --input-border: rgba(0, 214, 194, 0.2);
   --input-focus: rgba(0, 214, 194, 0.4);
