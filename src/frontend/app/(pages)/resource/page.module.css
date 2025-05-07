@@ -172,3 +172,23 @@
     transform: translateY(0);
   }
 }
+
+.toggleBtn {
+  background-color: #ddd;
+  color: #000;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-weight: 500;
+  border: 1px solid #ccc;
+  transition: all 0.3s ease;
+}
+
+.toggleBtn:hover {
+  background-color: #0f83777a;
+  color: black;
+}
+
+.activeToggle {
+  background-color: #0f8377;
+  border-color: #00d6c2;
+}

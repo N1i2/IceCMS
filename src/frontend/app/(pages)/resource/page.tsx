@@ -18,12 +18,19 @@ export default function ResourcesPage() {
   const [search, setSearch] = useState('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null);
   const [typeFilter, setTypeFilter] = useState<'all' | ResourceType>('all');
+  const [onlyMyResources, setOnlyMyResources] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const router = useRouter();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) router.push('/login');
+    const storedUserId = localStorage.getItem('userId');
+    if (!token || !storedUserId) {
+      router.push('/login');
+      return;
+    }
+    setUserId(storedUserId);
     loadResources();
     document.title = 'Resources';
   }, []);
@@ -63,6 +70,10 @@ export default function ResourcesPage() {
       if (typeFilter === 'all') return true;
       return resource.type === typeFilter;
     })
+    .filter((resource) => {
+      if (!onlyMyResources || !userId) return true;
+      return resource.creater === userId;
+    })
     .sort((a, b) => {
       if (sortDirection === 'asc') return a.name.localeCompare(b.name);
       if (sortDirection === 'desc') return b.name.localeCompare(a.name);
@@ -73,7 +84,7 @@ export default function ResourcesPage() {
     <div className={styles.page}>
       <Toaster />
       <div className={styles.header}>
-      <Button onClick={() => router.push('/home')} className={styles.backBtn}>
+        <Button onClick={() => router.push('/home')} className={styles.backBtn}>
           Go back to Home
         </Button>
         <h1 className={styles.title}>Resources</h1>
@@ -96,6 +107,14 @@ export default function ResourcesPage() {
 
         <div className={styles.filters}>
           <div>
+            <Button
+              onClick={() => setOnlyMyResources((prev) => !prev)}
+              className={`${styles.toggleBtn} ${onlyMyResources ? styles.activeToggle : ''}`}
+            >
+              {onlyMyResources ? 'Show All Resources' : 'Only My Resources'}
+            </Button>
+          </div>
+          <div>
             <label>Sort:</label>
             <select
               value={sortDirection || ''}
@@ -112,7 +131,7 @@ export default function ResourcesPage() {
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as any)}
             >
-              <option value='all'>All</option>
+              <option value="all">All</option>
               <option value={TextType}>Text</option>
               <option value={ImageType}>Image</option>
               <option value={ScriptType}>Script</option>

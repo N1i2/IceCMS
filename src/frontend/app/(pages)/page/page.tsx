@@ -12,16 +12,23 @@ import { Toaster } from 'sonner';
 export default function PagesPage() {
   const [pages, setPages] = useState<PageModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [loadingRows, setLoadingRows] = useState<string[]>([]);
+  const [searchName, setSearchName] = useState('');
+  const [searchId, setSearchId] = useState('');
+  const [nameSort, setNameSort] = useState<'asc' | 'desc' | ''>('');
+  const [onlyMyPage, setOnlyMyPage] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
   const router = useRouter();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-
-    if (!token) {
-      router.push('/login');
-    }
+    const userId = localStorage.getItem('userId');
+    if (!token || !userId) router.push('/login');
 
     loadPages();
+
+    setUserId(userId);
     document.title = 'Pages';
   }, []);
 
@@ -31,95 +38,160 @@ export default function PagesPage() {
       const data = await pageApi.getAll();
       setPages(data.data);
     } catch (err: any) {
-      sendError('Error', `Failed to get page. ${err.message}`);
+      sendError('Error', `Failed to get pages. ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
+    setLoadingRows((prev) => [...prev, id]);
     try {
       await pageApi.delete(id);
-      loadPages();
-      const page = pages.find((page) => page.id === id);
+      const deletedPage = pages.find((p) => p.id === id);
       sendSuccess(
         'Congratulations',
-        `Page with name \"${page?.name}\" deleted successfully!`,
+        `Page "${deletedPage?.name}" deleted successfully!`,
       );
+      loadPages();
     } catch (err: any) {
       sendError('Error', `Failed to delete page. ${err.message}`);
+    } finally {
+      setLoadingRows((prev) => prev.filter((rowId) => rowId !== id));
     }
   };
 
+  const filteredPages = pages
+    .filter((page) =>
+      page.name.toLowerCase().includes(searchName.toLowerCase()),
+    )
+    .filter((page) =>
+      page.pageId.toLowerCase().includes(searchId.toLowerCase()),
+    )
+    .filter((page) => {
+      if (!onlyMyPage || !userId) return true;
+      return page.creater === userId;
+    })
+    .sort((a, b) => {
+      if (nameSort === 'asc') return a.name.localeCompare(b.name);
+      if (nameSort === 'desc') return b.name.localeCompare(a.name);
+      return 0;
+    });
+
   return (
-    <div>
+    <div className={styles.page}>
+      <Toaster />
+
       <div className={styles.header}>
-        <Button
-          onClick={() => router.push('/home')}
-          className={styles.buttonBack}
-        >
+        <Button onClick={() => router.push('/home')} className={styles.backBtn}>
           Go back to Home
         </Button>
         <h1 className={styles.title}>Pages</h1>
         <Button
           onClick={() => router.push('/page/editor')}
-          className={styles.button}
+          className={styles.actionBtn}
         >
           Create New Page
         </Button>
       </div>
 
-      <div className="p-6">
-        <div className={styles.tableWrapper}>
-          {loading ? (
-            <p className="text-white text-center py-10">Loading pages...</p>
-          ) : (
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>PageId</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pages.map((page) => (
-                  <tr key={page.id} className={styles.fadeIn}>
-                    <td className={styles.border}>{page.name}</td>
-                    <td className={styles.border}>{page.pageId}</td>
-                    <td className="text-center">
-                      <div className={styles.actions}>
-                        <Button
-                          onClick={() =>
-                            router.push(`/page/editor?id=${page.id}`)
-                          }
-                          className={styles.changeButton}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          onClick={() => handleDelete(page.id!)}
-                          className={styles.changeButton}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {pages.length === 0 && (
-                  <tr>
-                    <td colSpan={3} className="text-center py-10 text-gray-400">
-                      No pages found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
+      <div className={styles.controls}>
+        <input
+          type="text"
+          className={styles.searchInput}
+          placeholder="Search by name..."
+          value={searchName}
+          onChange={(e) => setSearchName(e.target.value)}
+        />
+        <input
+          type="text"
+          className={styles.searchInput}
+          placeholder="Search by Page ID..."
+          value={searchId}
+          onChange={(e) => setSearchId(e.target.value)}
+        />
+        <div className={styles.filters}>
+          <div>
+            <Button
+              onClick={() => setOnlyMyPage((prev) => !prev)}
+              className={`${styles.toggleBtn} ${
+                onlyMyPage ? styles.activeToggle : ''
+              }`}
+            >
+              {onlyMyPage ? 'Show All Page' : 'Only My Page'}
+            </Button>
+          </div>
+          <div>
+            <label>Sort by Name:</label>
+            <select
+              value={nameSort}
+              onChange={(e) =>
+                setNameSort(e.target.value as 'asc' | 'desc' | '')
+              }
+            >
+              <option value="">None</option>
+              <option value="asc">A → Z</option>
+              <option value="desc">Z → A</option>
+            </select>
+          </div>
         </div>
       </div>
-      <Toaster />
+
+      <div className={styles.tableWrapper}>
+        {loading ? (
+          <p className={styles.loading}>Loading pages...</p>
+        ) : (
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Page ID</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredPages.length > 0 ? (
+                filteredPages.map((page) => (
+                  <tr key={page.id} className={styles.fadeIn}>
+                    <td>{page.name}</td>
+                    <td>{page.pageId}</td>
+                    <td>
+                      {loadingRows.includes(page.id!) ? (
+                        <div className={styles.loadingIndicator}>
+                          Loading...
+                        </div>
+                      ) : (
+                        <div className={styles.actions}>
+                          <Button
+                            onClick={() =>
+                              router.push(`/page/editor?id=${page.id}`)
+                            }
+                            className={styles.actionBtn}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            onClick={() => handleDelete(page.id!)}
+                            className={styles.actionBtn}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={3} className={styles.noData}>
+                    No pages found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 }
