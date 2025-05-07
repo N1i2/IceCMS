@@ -227,7 +227,7 @@ export default function PageEditor() {
     <div className={styles.editorContainer}>
       <div className={styles.editorPreview}>
         <h1 className={styles.editorTitle}>Page Preview</h1>
-        <div className={styles.editorPreviewContent}>
+        <div id='body' className={styles.editorPreviewContent}>
           {selectedTemplate?.templateCss && (
             <style
               dangerouslySetInnerHTML={{ __html: selectedTemplate.templateCss }}

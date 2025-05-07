@@ -42,7 +42,7 @@ export default function TemplateBuilderPage() {
     editorRef.current = editor;
 
     if (!id) {
-      editor.setComponents(`<div class="body-wrapper">${initialHtml}</div>`);
+      editor.setComponents(`${initialHtml}`);
       editor.setStyle(initialCss + '\n.body-wrapper { min-height: 100vh; }');
     } else {
       loadTemplate(id);
@@ -122,6 +122,13 @@ export default function TemplateBuilderPage() {
       }
       bodyCss += '}\n';
       css += '\n' + bodyCss;
+
+      let bodyIdCss = '#body {';
+      for (const [key, value] of Object.entries(bodyStyles)) {
+        bodyIdCss += `${key}: ${value};`;
+      }
+      bodyIdCss += '}\n';
+      css += '\n' + bodyIdCss;
     }
 
     const parser = new DOMParser();
