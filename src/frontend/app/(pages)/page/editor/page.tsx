@@ -34,14 +34,14 @@ export default function PageEditor() {
   const [resources, setResources] = useState<ResourceModel[]>([]);
   const [templates, setTemplates] = useState<TemplateModel[]>([]);
   const [selectedScript, setSelectedScript] = useState<string>('');
-  const [previewHtml, setPreviewHtml] = useState<string>('');
-
+  const [previewHtml, setPreviewHtml] = useState<string>('');  
+  
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
-    
+
     if (!token || !userId) {
-      router.push('/login'); 
+      router.push('/login');
     }
 
     setPage(prev => ({ ...prev, creater: userId || '' })); 
@@ -93,6 +93,8 @@ export default function PageEditor() {
   const updatePreview = () => {
     if (!selectedTemplate) return;
 
+    removeScripts();
+
     const parser = new DOMParser();
     const doc = parser.parseFromString(
       selectedTemplate.templateHtml,
@@ -128,12 +130,28 @@ export default function PageEditor() {
       if (scriptResource) {
         const scriptEl = document.createElement('script');
         scriptEl.type = 'text/javascript';
+        scriptEl.setAttribute('data-preview', 'true');
+        scriptEl.setAttribute('data-script-id', scriptId); 
         scriptEl.textContent = `(function(){${scriptResource.value}})()`;
         document.body.appendChild(scriptEl);
       }
     });
 
     setPreviewHtml(doc.body.innerHTML);
+  };
+
+  const removeScripts = (scriptId?: string) => {
+    if (scriptId) {
+      const scriptToRemove = document.querySelector(`script[data-script-id="${scriptId}"]`);
+      if (scriptToRemove) {
+        scriptToRemove.remove();
+      }
+      return;
+    }
+    
+    const allPreviewScripts = document.querySelectorAll('script[data-preview="true"]');
+    console.log(allPreviewScripts)
+    allPreviewScripts.forEach(script => script.remove());
   };
 
   const isValidPage = () => {
@@ -217,7 +235,7 @@ export default function PageEditor() {
       templateId: '',
       resources: new Map(),
       scripts: [],
-      creater: localStorage.getItem('userId') || '1',
+      creater: '',
     });
     setPreviewHtml('');
     sendSuccess('Form cleared', 'You can start fresh');

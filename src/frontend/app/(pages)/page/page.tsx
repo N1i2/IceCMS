@@ -24,6 +24,7 @@ export default function PagesPage() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
+    
     if (!token || !userId) router.push('/login');
 
     loadPages();
