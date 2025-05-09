@@ -3,7 +3,6 @@ import { ResourceModel } from "@/app/models/resourceModel";
 import { TemplateModel } from "@/app/models/templateModel";
 import { PageModel } from "@/app/models/pageModel";
 import { UserModel } from "@/app/models/userModel";
-import { projectUpdate } from "next/dist/build/swc/generated-native";
 
 const api = axios.create({
   baseURL: "/api",

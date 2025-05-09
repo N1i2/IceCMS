@@ -123,7 +123,7 @@ export default function TemplateBuilderPage() {
       bodyCss += '}\n';
       css += '\n' + bodyCss;
 
-      let bodyIdCss = '#body {';
+      let bodyIdCss = '#body-div {';
       for (const [key, value] of Object.entries(bodyStyles)) {
         bodyIdCss += `${key}: ${value};`;
       }

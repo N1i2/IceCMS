@@ -11,6 +11,8 @@ import { TemplateModel } from '@/app/models/templateModel';
 import styles from './page.module.css';
 import { Button } from '@/components/ui/button';
 import { generateRawHtml } from './pageGenerator';
+import { UrlResult, HtmlResult, PngResult } from './const/resultType';
+import { getUrlPage, getHtmlPage, getPngPage } from './getPage';
 import {
   ImageType,
   ScriptType,
@@ -28,14 +30,15 @@ export default function PageEditor() {
     templateId: '',
     resources: new Map(),
     scripts: [],
-    creater: '', 
+    creater: '',
   });
 
   const [resources, setResources] = useState<ResourceModel[]>([]);
   const [templates, setTemplates] = useState<TemplateModel[]>([]);
   const [selectedScript, setSelectedScript] = useState<string>('');
-  const [previewHtml, setPreviewHtml] = useState<string>('');  
-  
+  const [previewHtml, setPreviewHtml] = useState<string>('');
+  const [renderOption, setRenderOption] = useState('url'); // default
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
@@ -44,7 +47,7 @@ export default function PageEditor() {
       router.push('/login');
     }
 
-    setPage(prev => ({ ...prev, creater: userId || '' })); 
+    setPage((prev) => ({ ...prev, creater: userId || '' }));
 
     document.title = 'Page Editor';
 
@@ -82,7 +85,7 @@ export default function PageEditor() {
     };
 
     loadPage();
-  }, [searchParams]);  
+  }, [searchParams]);
 
   useEffect(() => {
     updatePreview();
@@ -107,7 +110,7 @@ export default function PageEditor() {
 
       const resourceId = page.resources.get(zoneName);
       const resource = resources.find((r) => r.id === resourceId);
-      
+
       if (resource) {
         if (resource.type === ImageType) {
           const img = doc.createElement('img');
@@ -131,7 +134,7 @@ export default function PageEditor() {
         const scriptEl = document.createElement('script');
         scriptEl.type = 'text/javascript';
         scriptEl.setAttribute('data-preview', 'true');
-        scriptEl.setAttribute('data-script-id', scriptId); 
+        scriptEl.setAttribute('data-script-id', scriptId);
         scriptEl.textContent = `(function(){${scriptResource.value}})()`;
         document.body.appendChild(scriptEl);
       }
@@ -142,16 +145,20 @@ export default function PageEditor() {
 
   const removeScripts = (scriptId?: string) => {
     if (scriptId) {
-      const scriptToRemove = document.querySelector(`script[data-script-id="${scriptId}"]`);
+      const scriptToRemove = document.querySelector(
+        `script[data-script-id="${scriptId}"]`,
+      );
       if (scriptToRemove) {
         scriptToRemove.remove();
       }
       return;
     }
-    
-    const allPreviewScripts = document.querySelectorAll('script[data-preview="true"]');
-    console.log(allPreviewScripts)
-    allPreviewScripts.forEach(script => script.remove());
+
+    const allPreviewScripts = document.querySelectorAll(
+      'script[data-preview="true"]',
+    );
+    console.log(allPreviewScripts);
+    allPreviewScripts.forEach((script) => script.remove());
   };
 
   const isValidPage = () => {
@@ -206,7 +213,13 @@ export default function PageEditor() {
       const payload = {
         ...page,
         resources: Object.fromEntries(page.resources),
-        rawHtml: generateRawHtml(previewHtml, selectedTemplate?.templateCss || '', page.scripts.map((s) => resources.find(r => r.id === s)?.value || '')),
+        rawHtml: generateRawHtml(
+          previewHtml,
+          selectedTemplate?.templateCss || '',
+          page.scripts.map(
+            (s) => resources.find((r) => r.id === s)?.value || '',
+          ),
+        ),
       };
 
       const idParam = searchParams.get('id');
@@ -221,7 +234,23 @@ export default function PageEditor() {
 
       if (!res.ok) throw new Error('Result not ok');
 
+      const savedData = await res.json();
+
+      console.log('Saved data:', renderOption);
+
+      if (renderOption === UrlResult.toLowerCase()) {
+        getUrlPage(page.pageId);
+      } else if (renderOption === HtmlResult) {
+        getHtmlPage(page.name, page.pageId);
+      } else if (renderOption === PngResult) {
+        getPngPage(page.name, page.pageId);
+      }
+
       sendSuccess('Saved', 'Page saved successfully');
+
+      if (!idParam) {
+        router.push(`/page/editor?id=${savedData.id}`);
+      }
     } catch (err: any) {
       sendError('Error', `${err}`);
     }
@@ -245,7 +274,7 @@ export default function PageEditor() {
     <div className={styles.editorContainer}>
       <div className={styles.editorPreview}>
         <h1 className={styles.editorTitle}>Page Preview</h1>
-        <div id='body' className={styles.editorPreviewContent}>
+        <div id="body-div" className={styles.editorPreviewContent}>
           {selectedTemplate?.templateCss && (
             <style
               dangerouslySetInnerHTML={{ __html: selectedTemplate.templateCss }}
@@ -263,9 +292,12 @@ export default function PageEditor() {
           value={page.pageId}
           onChange={(e) =>
             setPage((prev) => ({ ...prev, pageId: e.target.value }))
-          } 
+          }
           onBlur={(e) => {
-            setPage((prev) => ({ ...prev, pageId: e.target.value.replaceAll(' ', '_') }));
+            setPage((prev) => ({
+              ...prev,
+              pageId: e.target.value.replaceAll(' ', '_'),
+            }));
           }}
         />
         <label>Page Name</label>
@@ -283,23 +315,25 @@ export default function PageEditor() {
             setPage((prev) => ({ ...prev, templateId: e.target.value }))
           }
         >
-          <option value="" disabled>Select Template</option>
+          <option value="" disabled>
+            Select Template
+          </option>
           {templates.map((t) => (
             <option key={t.id} value={t.id}>
               {t.name}
             </option>
           ))}
         </select>
-          { page.templateId && ( 
-              <Button className={styles.outlineButton}
-              onClick={() =>{
-                router.push(`/template/builder?id=${page.templateId}`)
-              }}
-              >
-                Change template
-              </Button>
-            )
-          }
+        {page.templateId && (
+          <Button
+            className={styles.outlineButton}
+            onClick={() => {
+              router.push(`/template/builder?id=${page.templateId}`);
+            }}
+          >
+            Change template
+          </Button>
+        )}
         {selectedTemplate?.zones.map((zone) => (
           <div key={zone} className={styles.zoneRow}>
             <label>{zone}</label>
@@ -341,7 +375,7 @@ export default function PageEditor() {
             ))}
         </select>
         <Button
-        className={styles.outlineButton}
+          className={styles.outlineButton}
           onClick={() => {
             if (selectedScript) {
               setPage((prev) => ({
@@ -381,9 +415,34 @@ export default function PageEditor() {
         )}
 
         <div className={styles.editorActions}>
-          <Button className={styles.outlineButton} onClick={() => router.push('/page')}>Back to Pages</Button>
-          <Button className={styles.outlineButton} onClick={handleClear}>Clear Form</Button>
-          <Button className={styles.button} onClick={handleSave}>Page Render</Button>
+          <Button
+            className={styles.outlineButton}
+            onClick={() => router.push('/page')}
+          >
+            Back to Pages
+          </Button>
+          <Button
+            className={styles.outlineButton}
+            onClick={() => router.push('/resource')}
+          >
+            Show all resources
+          </Button>
+          <Button className={styles.outlineButton} onClick={handleClear}>
+            Clear Form
+          </Button>
+          <label>Render Option</label>
+          <select
+            value={renderOption}
+            onChange={(e) => setRenderOption(e.target.value)}
+            className={styles.selectedScript}
+          >
+            <option value={UrlResult}>{UrlResult}</option>
+            <option value={HtmlResult}>{HtmlResult} file</option>
+            <option value={PngResult}>{PngResult} file</option>
+          </select>
+          <Button className={styles.button} onClick={handleSave}>
+            Page Render
+          </Button>
         </div>
       </div>
       <Toaster />

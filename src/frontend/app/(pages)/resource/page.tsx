@@ -84,8 +84,8 @@ export default function ResourcesPage() {
     <div className={styles.page}>
       <Toaster />
       <div className={styles.header}>
-        <Button onClick={() => router.push('/home')} className={styles.backBtn}>
-          Go back to Home
+        <Button onClick={() => router.back()} className={styles.backBtn}>
+          Go back
         </Button>
         <h1 className={styles.title}>Resources</h1>
         <Button
