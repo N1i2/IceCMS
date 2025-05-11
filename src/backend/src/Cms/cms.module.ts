@@ -15,9 +15,7 @@ import { PagesService } from '../page_module/pages.service';
 import { UserController } from  '../user_module/user.controller';
 import { UserModule } from      '../user_module/user.module';
 import { UserService } from     '../user_module/user.service';
-import { AuthController } from  '../auth/auth.controller';
 import { AuthModule } from      '../auth/auth.module';
-import { AuthService } from     '../auth/auth.service';
 import { PageViewController } from 'src/page_module/page.view.controller';
 import { PagesViewService } from 'src/page_module/pages.view.service';
 
@@ -40,7 +38,7 @@ import { PagesViewService } from 'src/page_module/pages.view.service';
     TemplateModule,
     ResourcesModule,
     UserModule,
-    AuthModule, 
+    AuthModule,
   ],
   controllers: [
     CmsController,

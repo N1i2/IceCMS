@@ -82,15 +82,13 @@ export async function getPngPage(name: string, pageId: string) {
     const response = await fetch(`http://localhost:3000/p/${pageId}`);
     const rawHtml = await response.text();
 
-    // Создаем скрытый iframe для отрисовки страницы
     const iframe = document.createElement('iframe');
     iframe.style.position = 'fixed';
     iframe.style.top = '-10000px';
-    iframe.style.width = '1280px'; // ширина для скриншота
-    iframe.style.height = '720px'; // высота для скриншота
+    iframe.style.width = '1280px'; 
+    iframe.style.height = '720px'; 
     document.body.appendChild(iframe);
 
-    // Ждем, пока iframe загрузит HTML
     const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
     if (!iframeDoc) throw new Error('Cannot access iframe document');
 
@@ -98,7 +96,6 @@ export async function getPngPage(name: string, pageId: string) {
     iframeDoc.write(rawHtml);
     iframeDoc.close();
 
-    // Ждем полной загрузки стилей и скриптов (если нужно — можно улучшить)
     iframe.onload = async () => {
       try {
         const canvas = await html2canvas(iframe.contentDocument!.body);
