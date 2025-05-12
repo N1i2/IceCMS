@@ -9,16 +9,17 @@ import styles from './page.module.css';
 import { Button } from '@/components/ui/button';
 import { Toaster } from 'sonner';
 import { ResourceType, TextType, ImageType, ScriptType } from '@/app/models/const/ConstantTypes';
+import { AxiosError } from 'axios';
 
 export default function ResourcesPage() {
   const [resources, setResources] = useState<ResourceModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [loadingRows, setLoadingRows] = useState<string[]>([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(null);
   const [typeFilter, setTypeFilter] = useState<'all' | ResourceType>('all');
-  const [onlyMyResources, setOnlyMyResources] = useState(false);
+  const [onlyMyResources, setOnlyMyResources] = useState<boolean>(false);
   const [userId, setUserId] = useState<string | null>(null);
 
   const router = useRouter();
@@ -33,16 +34,17 @@ export default function ResourcesPage() {
     setUserId(storedUserId);
     loadResources();
     document.title = 'Resources';
-  }, []);
+  }, [router]);
 
   const loadResources = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await resourceApi.getAll();
-      setResources(data.data);
-    } catch (err: any) {
-      setError(`Failed to load resources. ${err.message}`);
+      const response = await resourceApi.getAll();
+      setResources(response.data);
+    } catch (err: unknown) {
+      const error = err as AxiosError<{ message?: string }>;
+      setError(`Failed to load resources. ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -55,8 +57,9 @@ export default function ResourcesPage() {
       await resourceApi.delete(id);
       loadResources();
       sendSuccess('Congratulations', `Resource "${resource?.name}" deleted successfully!`);
-    } catch (err: any) {
-      setError(`Failed to delete resource. ${err.message}`);
+    } catch (err: unknown) {
+      const error = err as AxiosError<{ message?: string }>;
+      setError(`Failed to delete resource. ${error.message}`);
     } finally {
       setLoadingRows((prev) => prev.filter((rowId) => rowId !== id));
     }
@@ -84,7 +87,7 @@ export default function ResourcesPage() {
     <div className={styles.page}>
       <Toaster />
       <div className={styles.header}>
-        <Button onClick={() => router.back()} className={styles.backBtn}>
+        <Button onClick={() => router.push('/home')} className={styles.backBtn}>
           Go back
         </Button>
         <h1 className={styles.title}>Resources</h1>
@@ -118,7 +121,9 @@ export default function ResourcesPage() {
             <label>Sort:</label>
             <select
               value={sortDirection || ''}
-              onChange={(e) => setSortDirection(e.target.value as 'asc' | 'desc' | null)}
+              onChange={(e) => 
+                setSortDirection(e.target.value === '' ? null : e.target.value as 'asc' | 'desc')
+              }
             >
               <option value="">None</option>
               <option value="asc">A → Z</option>
@@ -129,7 +134,9 @@ export default function ResourcesPage() {
             <label>Type:</label>
             <select
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as any)}
+              onChange={(e) => 
+                setTypeFilter(e.target.value as 'all' | ResourceType)
+              }
             >
               <option value="all">All</option>
               <option value={TextType}>Text</option>

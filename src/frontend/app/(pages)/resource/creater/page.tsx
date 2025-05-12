@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, ChangeEvent, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, ChangeEvent, useEffect, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
 import { Toaster } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,52 +26,61 @@ import {
   ScriptType,
 } from '@/app/models/const/ConstantTypes';
 import styles from './page.module.css';
+import { AxiosError } from 'axios';
 
-export default function ResourceCreater() {
+function ResourceCreaterContent() {
   const [resource, setResource] = useState<Omit<ResourceModel, 'id'>>({
     name: '',
     type: TextType,
     value: '',
-    creater: localStorage.getItem('userId') || '1',
+    creater: '',
   });
   const [errors, setErrors] = useState<{ name?: string; file?: string }>({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [isUpdate, setIsUpdate] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isUpdate, setIsUpdate] = useState<boolean>(false);
+  const [isClient, setIsClient] = useState<boolean>(false);
+  const [id, setId] = useState<string | null>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
+    setIsClient(true);
+    
     const token = localStorage.getItem('token');
-
+    const userId = localStorage.getItem('userId');
+    
     if (!token) {
       router.push('/login');
+      return;
     }
 
+    setResource(prev => ({ ...prev, creater: userId || '1' }));
     document.title = 'Resource Creator';
-  }, []);
 
-  useEffect(()=>{
-    const id = searchParams.get('id');
-    if (id) {
+    // Получаем параметры из URL
+    const params = new URLSearchParams(window.location.search);
+    const idParam = params.get('id');
+    setId(idParam);
+    
+    if (idParam) {
       setIsUpdate(true);
-
-      const loadResource = async () => {
-        try {
-          const response = await resourceApi.getById(id);
-          const loadedResource: ResourceModel = response.data;
-          setResource({
-            name: loadedResource.name,
-            type: loadedResource.type,
-            value: loadedResource.value,
-            creater: loadedResource.creater,
-          });
-        } catch (error) {
-          console.error('Failed to load resource', error);
-        }
-      };
-      loadResource();
+      loadResource(idParam);
     }
-  },[searchParams])
+  }, [router]);
+
+  const loadResource = async (id: string) => {
+    try {
+      const response = await resourceApi.getById(id);
+      const loadedResource: ResourceModel = response.data;
+      setResource({
+        name: loadedResource.name,
+        type: loadedResource.type,
+        value: loadedResource.value,
+        creater: loadedResource.creater,
+      });
+    } catch (error) {
+      console.error('Failed to load resource', error);
+    }
+  };
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -104,14 +113,13 @@ export default function ResourceCreater() {
       name: '',
       type: TextType,
       value: '',
-      creater: localStorage.getItem('userId') || '1',
+      creater: isClient ? (localStorage.getItem('userId') || '1') : '1',
     });
     setErrors({});
-
     sendSuccess('Success', 'Resource clear successfully!');
   };
 
-  const isFormValid = () => {
+  const isFormValid = (): boolean => {
     const newErrors: { name?: string; file?: string } = {};
 
     if (!resource.name || resource.name.length <= 0) {
@@ -137,14 +145,13 @@ export default function ResourceCreater() {
     return true;
   };
 
-  const handleSave = async () => {
+  const handleSave = async (): Promise<void> => {
     if (!isFormValid()) return;
 
     setIsLoading(true);
 
     try {
       const { data: existingResources } = await resourceApi.getAll();
-      const id = searchParams.get('id');
 
       if (
         existingResources.some(
@@ -158,30 +165,39 @@ export default function ResourceCreater() {
         return;
       }
 
+      const resourceToSave = {
+        ...resource,
+        creater: isClient ? (localStorage.getItem('userId') || '1') : '1'
+      };
+
       if (id) {
-        await resourceApi.update(id, resource);
+        await resourceApi.update(id, resourceToSave);
       } else {
-        await resourceApi.create(resource);
+        await resourceApi.create(resourceToSave);
         handleClear();
       }
 
       sendSuccess('Success', 'Resource saved successfully!');
-
       router.back();
-    } catch (error: any) {
-      if (error.message && error.message.toLowerCase().includes('timeout')) {
+    } catch (error: unknown) {
+      const err = error as AxiosError<{ message?: string }>;
+      if (err.message?.toLowerCase().includes('timeout')) {
         sendSuccess(
           'Timeout',
           'The file is too large or the operation took too long. Please wait a bit and try again.',
         );
       } else {
-        console.error('Error saving resource:', error);
-        sendError('Error', 'Failed to save resource');
+        console.error('Error saving resource:', err);
+        sendError('Error', err.response?.data?.message || 'Failed to save resource');
       }
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (!isClient) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className={styles.container}>
@@ -189,7 +205,7 @@ export default function ResourceCreater() {
 
       <Card className={styles.card}>
         <CardContent className={styles.content}>
-          <div className={styles.formGroup}>
+<div className={styles.formGroup}>
             <Label htmlFor="name" className={styles.label}>
               Name
             </Label>
@@ -212,10 +228,10 @@ export default function ResourceCreater() {
               </Label>
               <Select
                 value={resource.type}
-                onValueChange={(value) => {
+                onValueChange={(value: ResourceType) => {
                   setResource((prev) => ({
                     ...prev,
-                    type: value as ResourceType,
+                    type: value,
                     value: '',
                   }));
                 }}
@@ -347,5 +363,13 @@ export default function ResourceCreater() {
       </Card>
       <Toaster />
     </div>
+  );
+}
+
+export default function ResourceCreater() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResourceCreaterContent />
+    </Suspense>
   );
 }

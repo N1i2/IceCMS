@@ -8,17 +8,18 @@ import { sendSuccess } from '@/helpModule/Massages';
 import styles from './page.module.css';
 import { Button } from '@/components/ui/button';
 import { Toaster } from 'sonner';
+import { AxiosError } from 'axios';
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<TemplateModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [loadingRows, setLoadingRows] = useState<string[]>([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState<string>('');
   const [nameSort, setNameSort] = useState<'asc' | 'desc' | ''>('');
   const [zonesSort, setZonesSort] = useState<'asc' | 'desc' | ''>('');
   const [zoneFilter, setZoneFilter] = useState<string>('');
-  const [onlyMyTemplate, setOnlyMyTemplate] = useState(false);
+  const [onlyMyTemplate, setOnlyMyTemplate] = useState<boolean>(false);
   const [userId, setUserId] = useState<string | null>(null);
 
   const router = useRouter();
@@ -31,16 +32,17 @@ export default function TemplatesPage() {
 
     setUserId(userId);
     document.title = 'Templates';
-  }, []);
+  }, [router]);
 
   const loadTemplates = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await templateApi.getAll();
-      setTemplates(data.data);
-    } catch (err: any) {
-      setError(`Failed to load templates. ${err.message}`);
+      const response = await templateApi.getAll();
+      setTemplates(response.data);
+    } catch (err: unknown) {
+      const error = err as AxiosError<{ message?: string }>;
+      setError(`Failed to load templates. ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -56,8 +58,9 @@ export default function TemplatesPage() {
         'Congratulations',
         `Template "${template?.name}" deleted successfully!`,
       );
-    } catch (err: any) {
-      setError(`Failed to delete template. ${err.message}`);
+    } catch (err: unknown) {
+      const error = err as AxiosError<{ message?: string }>;
+      setError(`Failed to delete template. ${error.message}`);
     } finally {
       setLoadingRows((prev) => prev.filter((rowId) => rowId !== id));
     }

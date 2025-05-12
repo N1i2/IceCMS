@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, Suspense } from 'react';
 import grapesjs, { Editor } from 'grapesjs';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import 'grapesjs/dist/css/grapes.min.css';
 import baseBlocksPlugin from 'grapesjs-blocks-basic';
 import { templateApi } from '@/app/services/api';
@@ -12,21 +12,26 @@ import { sendSuccess, sendError } from '@/helpModule/Massages';
 import { Toaster } from 'sonner';
 import styles from './page.module.css';
 import { Button } from '@/components/ui/button';
+import { AxiosError } from 'axios';
 
-export default function TemplateBuilderPage() {
+function TemplateBuilderContent() {
   const editorRef = useRef<Editor | null>(null);
   const [templateName, setTemplateName] = useState<string>('Template 1');
+  const [id, setId] = useState<string | null>(null);
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
+    // Получаем параметры из URL безопасно
+    const params = new URLSearchParams(window.location.search);
+    setId(params.get('id'));
+
     const token = localStorage.getItem('token');
     if (!token) {
       router.push('/login');
+      return;
     }
 
     document.title = 'Template Builder';
-    const id = searchParams.get('id');
 
     const editor = grapesjs.init({
       container: '#gjs-editor',
@@ -41,11 +46,11 @@ export default function TemplateBuilderPage() {
 
     editorRef.current = editor;
 
-    if (!id) {
+    if (!params.get('id')) {
       editor.setComponents(`${initialHtml}`);
       editor.setStyle(initialCss + '\n.body-wrapper { min-height: 100vh; }');
     } else {
-      loadTemplate(id);
+      loadTemplate(params.get('id')!);
     }
 
     const bm = editor.BlockManager;
@@ -91,7 +96,7 @@ export default function TemplateBuilderPage() {
 
     bm.remove('video');
     bm.remove('map');
-  }, []);
+  }, [router]);
 
   const loadTemplate = async (id: string) => {
     try {
@@ -100,8 +105,12 @@ export default function TemplateBuilderPage() {
       editorRef.current?.setComponents(templateHtml);
       editorRef.current?.setStyle(templateCss);
       setTemplateName(response.data.name);
-    } catch (err: any) {
-      sendError('Failed to load templates.', `Please try again ${err.message}`);
+    } catch (err: unknown) {
+      const error = err as AxiosError<{ message?: string }>;
+      sendError(
+        'Failed to load templates.',
+        `Please try again ${error.message}`
+      );
     }
   };
 
@@ -143,29 +152,24 @@ export default function TemplateBuilderPage() {
 
     try {
       const { data: templates } = await templateApi.getAll();
-      const duplicate =
-        templates.find(
-          (template: TemplateModel) => template.name === templateName,
-        ) &&
-        searchParams.get('id') !==
-          templates.find((res: { name: string }) => res.name === templateName)
-            ?.id;
+      const duplicateTemplate = templates.find(
+        (template: TemplateModel) => template.name === templateName
+      );
 
-      if (duplicate) {
+      if (duplicateTemplate && duplicateTemplate.id !== id) {
         sendError(
           'Template name already exists',
-          'Please choose a different name',
+          'Please choose a different name'
         );
         return;
       }
-    } catch (err: any) {
-      sendError('Error', `Something went wrong: ${err.message}`);
+    } catch (err: unknown) {
+      const error = err as AxiosError<{ message?: string }>;
+      sendError('Error', `Something went wrong: ${error.message}`);
       return;
     }
 
-    const currentTemplateId = searchParams.get('id');
     const testZone = new Set(zones);
-
     if (zones.length !== testZone.size) {
       sendError('Duplicate zone names', 'Please use unique zone names');
       return;
@@ -179,16 +183,19 @@ export default function TemplateBuilderPage() {
       creater: localStorage.getItem('userId') || '1',
     };
 
-    if (currentTemplateId) {
-      await templateApi.update(currentTemplateId, templateModel);
-      sendSuccess('Congratulations', 'Template successfully updated');
+    try {
+      if (id) {
+        await templateApi.update(id, templateModel);
+        sendSuccess('Congratulations', 'Template successfully updated');
+      } else {
+        await templateApi.create(templateModel);
+        sendSuccess('Congratulations', 'Template successfully created');
+      }
       router.back();
-      return;
+    } catch (err: unknown) {
+      const error = err as AxiosError<{ message?: string }>;
+      sendError('Error', `Failed to save template: ${error.message}`);
     }
-
-    await templateApi.create(templateModel);
-    sendSuccess('Congratulations', 'Template successfully created');
-    router.back();
   };
 
   return (
@@ -225,5 +232,13 @@ export default function TemplateBuilderPage() {
       </div>
       <Toaster />
     </div>
+  );
+}
+
+export default function TemplateBuilderPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TemplateBuilderContent />
+    </Suspense>
   );
 }

@@ -8,6 +8,7 @@ import { sendSuccess, sendError } from '@/helpModule/Massages';
 import styles from './page.module.css';
 import { Button } from '@/components/ui/button';
 import { Toaster } from 'sonner';
+import { AxiosError } from 'axios';
 
 export default function PagesPage() {
   const [pages, setPages] = useState<PageModel[]>([]);
@@ -24,22 +25,23 @@ export default function PagesPage() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
-    
+
     if (!token || !userId) router.push('/login');
 
     loadPages();
 
     setUserId(userId);
     document.title = 'Pages';
-  }, []);
+  }, [router]);
 
   const loadPages = async () => {
     setLoading(true);
     try {
       const data = await pageApi.getAll();
       setPages(data.data);
-    } catch (err: any) {
-      sendError('Error', `Failed to get pages. ${err.message}`);
+    } catch (err: unknown) {
+      const error = err as AxiosError<{ message?: string }>;
+      sendError('Error', `Failed to get pages. ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -55,8 +57,9 @@ export default function PagesPage() {
         `Page "${deletedPage?.name}" deleted successfully!`,
       );
       loadPages();
-    } catch (err: any) {
-      sendError('Error', `Failed to delete page. ${err.message}`);
+    } catch (err: unknown) {
+      const error = err as AxiosError<{ message?: string }>;
+      sendError('Error', `Failed to delete page. ${error.message}`);
     } finally {
       setLoadingRows((prev) => prev.filter((rowId) => rowId !== id));
     }

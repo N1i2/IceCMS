@@ -18,9 +18,10 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { userApi } from '@/app/services/api';
 import { UserRole } from '../user/const/userRoles';
-import { sendSuccess, sendError } from '@/helpModule/Massages';
+import { sendError } from '@/helpModule/Massages';
 import { Toaster } from 'sonner';
 import styles from './page.module.css';
+import { AxiosError } from 'axios';
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -41,7 +42,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     document.title = 'Login';
-  }, []);
+  }, [router]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
@@ -53,6 +54,7 @@ export default function LoginPage() {
 
       if (isRegister) {
         console.log('start register')
+
         response = await userApi.create({
           ...values
         });
@@ -65,8 +67,6 @@ export default function LoginPage() {
         ...values,
         role: UserRole,
       });
-
-      console.log(response);
 
       const token = response.data.access_token;
       const role = response.data.user?.role || UserRole;
@@ -81,12 +81,16 @@ export default function LoginPage() {
       }
 
       router.push('/home');
-    } catch (err: any) {
-      sendError(
-        'Error',
-        'Error: ' + (err.response?.data?.message || err.message),
-      );
-    }
+    } catch (err: unknown) {
+    const error = err as AxiosError<{
+      message?: string;
+      statusCode?: number;
+    }>;
+    
+    sendError(
+      'Error',
+      error.response?.data?.message || error.message || 'Unknown error'
+    );}
   };
 
   return (

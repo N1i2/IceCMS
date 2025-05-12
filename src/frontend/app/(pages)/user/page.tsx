@@ -9,20 +9,21 @@ import styles from './page.module.css';
 import { Button } from '@/components/ui/button';
 import { Toaster } from 'sonner';
 import { AdminRole, UserRole } from './const/userRoles';
+import { AxiosError } from 'axios';
+
+type RoleFilterType = 'all' | 'user' | 'admin';
+type LockedFilterType = 'all' | 'lock' | 'unlock';
+type SortDirectionType = 'asc' | 'desc' | null;
 
 export default function UsersPage() {
   const [users, setUsers] = useState<UserModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [loadingRows, setLoadingRows] = useState<string[]>([]);
-  const [search, setSearch] = useState('');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>(
-    null,
-  );
-  const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'admin'>('all');
-  const [lockedFilter, setLockedFilter] = useState<'all' | 'lock' | 'unlock'>(
-    'all',
-  );
+  const [search, setSearch] = useState<string>('');
+  const [sortDirection, setSortDirection] = useState<SortDirectionType>(null);
+  const [roleFilter, setRoleFilter] = useState<RoleFilterType>('all');
+  const [lockedFilter, setLockedFilter] = useState<LockedFilterType>('all');
 
   const router = useRouter();
 
@@ -38,19 +39,20 @@ export default function UsersPage() {
       loadUsers();
       document.title = 'Users';
     }
-  }, []);
+  }, [router]);
 
   const loadUsers = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await userApi.getAll();
-      const filteredUsers = res.data.filter(
-        (user: UserModel) => user.email !== 'nikola@gmail.com',
+      const response = await userApi.getAll();
+      const filteredUsers = response.data.filter(
+        (user: UserModel) => user.email !== 'nikola@gmail.com'
       );
       setUsers(filteredUsers);
-    } catch (err: any) {
-      setError(`Failed to load users: ${err.message}`);
+    } catch (err: unknown) {
+      const error = err as AxiosError<{ message?: string }>;
+      setError(`Failed to load users: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -65,8 +67,9 @@ export default function UsersPage() {
         'Success',
         `User has been ${!currentLock ? 'locked' : 'unlocked'} successfully!`,
       );
-    } catch (err: any) {
-      sendError('Error', `Failed to update lock status. ${err.message}`);
+    } catch (err: unknown) {
+      const error = err as AxiosError<{ message?: string }>;
+      sendError('Error', `Failed to update lock status. ${error.message}`);
     } finally {
       setLoadingRows((prev) => prev.filter((rowId) => rowId !== id));
     }
@@ -84,10 +87,11 @@ export default function UsersPage() {
           updatedRole === AdminRole ? 'granted' : 'revoked'
         } administrator rights!`,
       );
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as AxiosError<{ message?: string }>;
       sendError(
         'Error',
-        `Failed to update administrator rights. ${err.message}`,
+        `Failed to update administrator rights. ${error.message}`,
       );
     } finally {
       setLoadingRows((prev) => prev.filter((rowId) => rowId !== id));
@@ -136,7 +140,7 @@ export default function UsersPage() {
             <select
               value={sortDirection || ''}
               onChange={(e) =>
-                setSortDirection(e.target.value as 'asc' | 'desc' | null)
+                setSortDirection(e.target.value as SortDirectionType)
               }
             >
               <option value="">None</option>
@@ -148,7 +152,7 @@ export default function UsersPage() {
             <label>Role:</label>
             <select
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value as any)}
+              onChange={(e) => setRoleFilter(e.target.value as RoleFilterType)}
             >
               <option value="all">All</option>
               <option value="user">Users</option>
@@ -159,7 +163,7 @@ export default function UsersPage() {
             <label>Lock:</label>
             <select
               value={lockedFilter}
-              onChange={(e) => setLockedFilter(e.target.value as any)}
+              onChange={(e) => setLockedFilter(e.target.value as LockedFilterType)}
             >
               <option value="all">All</option>
               <option value="lock">Locked</option>

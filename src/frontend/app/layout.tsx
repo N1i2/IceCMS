@@ -1,5 +1,4 @@
 import React from 'react';
-import styles from './Layout.module.css';
 import './globals.css';
 
 export default function RootLayout({
@@ -11,7 +10,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head />
-      <body className={styles.body}>
+      <body>
         <main>{children}</main>
       </body>
     </html>

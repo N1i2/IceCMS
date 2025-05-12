@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
 import { sendSuccess, sendError } from '@/helpModule/Massages';
 import { Toaster } from 'sonner';
 import { pageApi } from '@/app/services/api';
@@ -18,11 +18,31 @@ import {
   ScriptType,
   TextType,
 } from '@/app/models/const/ConstantTypes';
+import { AxiosError } from 'axios';
 
-export default function PageEditor() {
-  const searchParams = useSearchParams();
+// Компонент-обертка для безопасного получения searchParams
+function SearchParamsProvider({
+  children,
+}: {
+  children: (params: URLSearchParams) => React.ReactNode;
+}) {
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      setSearchParams(params);
+    }
+  }, []);
+
+  if (!searchParams) return <div>Loading...</div>;
+
+  return <>{children(searchParams)}</>;
+}
+
+// Основной компонент редактора
+function PageEditorContent({ searchParams }: { searchParams: URLSearchParams }) {
   const router = useRouter();
-
   const [page, setPage] = useState<PageModel>({
     id: undefined,
     pageId: '',
@@ -37,7 +57,7 @@ export default function PageEditor() {
   const [templates, setTemplates] = useState<TemplateModel[]>([]);
   const [selectedScript, setSelectedScript] = useState<string>('');
   const [previewHtml, setPreviewHtml] = useState<string>('');
-  const [renderOption, setRenderOption] = useState('url'); // default
+  const [renderOption, setRenderOption] = useState('url');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -48,7 +68,6 @@ export default function PageEditor() {
     }
 
     setPage((prev) => ({ ...prev, creater: userId || '' }));
-
     document.title = 'Page Editor';
 
     const fetchData = async () => {
@@ -65,7 +84,7 @@ export default function PageEditor() {
     };
 
     fetchData();
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     const id = searchParams.get('id');
@@ -101,7 +120,7 @@ export default function PageEditor() {
     const parser = new DOMParser();
     const doc = parser.parseFromString(
       selectedTemplate.templateHtml,
-      'text/html',
+      'text/html'
     );
 
     selectedTemplate.zones.forEach((zoneName) => {
@@ -128,7 +147,7 @@ export default function PageEditor() {
 
     page.scripts.forEach((scriptId) => {
       const scriptResource = resources.find(
-        (r) => r.id === scriptId && r.type === ScriptType,
+        (r) => r.id === scriptId && r.type === ScriptType
       );
       if (scriptResource) {
         const scriptEl = document.createElement('script');
@@ -146,7 +165,7 @@ export default function PageEditor() {
   const removeScripts = (scriptId?: string) => {
     if (scriptId) {
       const scriptToRemove = document.querySelector(
-        `script[data-script-id="${scriptId}"]`,
+        `script[data-script-id="${scriptId}"]`
       );
       if (scriptToRemove) {
         scriptToRemove.remove();
@@ -155,9 +174,8 @@ export default function PageEditor() {
     }
 
     const allPreviewScripts = document.querySelectorAll(
-      'script[data-preview="true"]',
+      'script[data-preview="true"]'
     );
-    console.log(allPreviewScripts);
     allPreviewScripts.forEach((script) => script.remove());
   };
 
@@ -187,26 +205,20 @@ export default function PageEditor() {
       const duplicatePageId = pagesList.find(
         (p) =>
           p.pageId.trim().toLowerCase() === page.pageId.trim().toLowerCase() &&
-          p.id !== page.id,
+          p.id !== page.id
       );
       if (duplicatePageId) {
-        sendError(
-          'Duplicate Page ID',
-          'A page with this Page ID already exists',
-        );
+        sendError('Duplicate Page ID', 'A page with this Page ID already exists');
         return;
       }
 
       const duplicatePageName = pagesList.find(
         (p) =>
           p.name.trim().toLowerCase() === page.name.trim().toLowerCase() &&
-          p.id !== page.id,
+          p.id !== page.id
       );
       if (duplicatePageName) {
-        sendError(
-          'Duplicate Page Name',
-          'A page with this page name already exists',
-        );
+        sendError('Duplicate Page Name', 'A page with this page name already exists');
         return;
       }
 
@@ -216,9 +228,7 @@ export default function PageEditor() {
         rawHtml: generateRawHtml(
           previewHtml,
           selectedTemplate?.templateCss || '',
-          page.scripts.map(
-            (s) => resources.find((r) => r.id === s)?.value || '',
-          ),
+          page.scripts.map((s) => resources.find((r) => r.id === s)?.value || '')
         ),
       };
 
@@ -236,8 +246,6 @@ export default function PageEditor() {
 
       const savedData = await res.json();
 
-      console.log('Saved data:', renderOption);
-
       if (renderOption === UrlResult.toLowerCase()) {
         getUrlPage(page.pageId);
       } else if (renderOption === HtmlResult) {
@@ -251,8 +259,9 @@ export default function PageEditor() {
       if (!idParam) {
         router.push(`/page/editor?id=${savedData.id}`);
       }
-    } catch (err: any) {
-      sendError('Error', `${err}`);
+    } catch (error: unknown) {
+      const err = error as AxiosError<{ message?: string }>;
+      sendError('Error saving page', err.response?.data?.message || err.message);
     }
   };
 
@@ -366,7 +375,7 @@ export default function PageEditor() {
           <option value="">Select Script</option>
           {resources
             .filter(
-              (r) => r.type === ScriptType && !page.scripts.includes(r.id!),
+              (r) => r.type === ScriptType && !page.scripts.includes(r.id!)
             )
             .map((r) => (
               <option key={r.id} value={r.id}>
@@ -447,5 +456,16 @@ export default function PageEditor() {
       </div>
       <Toaster />
     </div>
+  );
+}
+
+// Экспортируемый компонент страницы
+export default function PageEditor() {
+  return (
+    <Suspense fallback={<div>Loading editor...</div>}>
+      <SearchParamsProvider>
+        {(searchParams) => <PageEditorContent searchParams={searchParams} />}
+      </SearchParamsProvider>
+    </Suspense>
   );
 }

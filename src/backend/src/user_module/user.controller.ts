@@ -10,7 +10,6 @@ import {
 import { UserService } from './user.service';
 import { CreateUpdateUserDto } from './dto/CreateUpdateUserDto';
 import { UserDto } from './dto/UserDto';
-import { zip } from 'rxjs/operators';
 
 @Controller('user')
 export class UserController {

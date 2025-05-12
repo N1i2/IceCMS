@@ -8,16 +8,35 @@ import styles from './page.module.css';
 import { BarChart, BookOpen, FileText, Users } from 'lucide-react';
 import { resourceApi, templateApi, pageApi, userApi } from '@/app/services/api';
 import 'tailwindcss';
+import { sendError } from '@/helpModule/Massages';
 
 export default function HomePage() {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [resourceStat, setResourceStat] = useState<number | string>('...');
-  const [templateStat, setTemplateStat] = useState<number | string>('...');
-  const [pageStat, setPageStat] = useState<number | string>('...');
-  const [userStat, setUserStat] = useState<number | string>('...');
+  const [stats, setStats] = useState({
+    resources: '...',
+    templates: '...',
+    pages: '...',
+    users: '...',
+  });
 
   useEffect(() => {
+    Promise.all([
+      resourceApi.getAll(),
+      templateApi.getAll(),
+      pageApi.getAll(),
+      userApi.getAll(),
+    ])
+      .then(([res, tmpl, pg, usr]) => {
+        setStats({
+          resources: `${res.data.length}`,
+          templates: `${tmpl.data.length}`,
+          pages: `${pg.data.length}`,
+          users: `${usr.data.length - 1}`,
+        });
+      })
+      .catch(console.error);
+
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('userRole');
 
@@ -33,25 +52,7 @@ export default function HomePage() {
       setIsAdmin(false);
       document.title = 'User Home';
     }
-
-    try {
-      resourceApi.getAll().then((response) => {
-        setResourceStat(response.data.length);
-      });
-      templateApi.getAll().then((template) => {
-        setTemplateStat(template.data.length);
-      });
-      pageApi.getAll().then((page) => {
-        setPageStat(page.data.length);
-      });
-      userApi.getAll().then((user) => {
-        setUserStat(user.data.length - 1);
-      });
-    }
-    catch {
-      console.log('resources need some time');
-    }
-  }, []);
+  }, [router]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -104,22 +105,22 @@ export default function HomePage() {
           <div className={styles.statsGrid}>
             <div className={styles.statCard}>
               <BookOpen size={32} className={styles.statIcon} />
-              <p className={styles.statValue}>{resourceStat}</p>
+              <p className={styles.statValue}>{stats.resources}</p>
               <p className={styles.statLabel}>Resources</p>
             </div>
             <div className={styles.statCard}>
               <FileText size={32} className={styles.statIcon} />
-              <p className={styles.statValue}>{templateStat}</p>
+              <p className={styles.statValue}>{stats.templates}</p>
               <p className={styles.statLabel}>Templates</p>
             </div>
             <div className={styles.statCard}>
               <BarChart size={32} className={styles.statIcon} />
-              <p className={styles.statValue}>{pageStat}</p>
+              <p className={styles.statValue}>{stats.pages}</p>
               <p className={styles.statLabel}>Pages</p>
             </div>
             <div className={styles.statCard}>
               <Users size={32} className={styles.statIcon} />
-              <p className={styles.statValue}>{userStat}</p>
+              <p className={styles.statValue}>{stats.users}</p>
               <p className={styles.statLabel}>Users</p>
             </div>
           </div>

@@ -8,7 +8,12 @@ export class AuthController {
   
   @Post('register')
   async register(@Body() dto: CreateUpdateUserDto) {
-    return this.authService.register(dto);
+    try{
+      return await this.authService.register(dto);
+    }
+    catch (err){
+      console.error(`Email already exists: ${err.message}`);
+    }
   }
 
   @Post('login')
