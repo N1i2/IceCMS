@@ -5,15 +5,10 @@ import { CreateUpdateUserDto } from '../user_module/dto/CreateUpdateUserDto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-  
+
   @Post('register')
   async register(@Body() dto: CreateUpdateUserDto) {
-    try{
-      return await this.authService.register(dto);
-    }
-    catch (err){
-      console.error(`Email already exists: ${err.message}`);
-    }
+    return await this.authService.register(dto);
   }
 
   @Post('login')

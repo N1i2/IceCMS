@@ -53,15 +53,10 @@ export default function LoginPage() {
         role: UserRole,});
 
       if (isRegister) {
-        console.log('start register')
-
         response = await userApi.create({
           ...values
         });
-        console.log('end register')
       }
-
-      console.log(response);
 
       response = await userApi.login({
         ...values,
