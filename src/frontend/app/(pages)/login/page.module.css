@@ -118,6 +118,7 @@
     margin-top: 16px;
   }
   
+  
   .resetContainer {
     margin-top: 20px;
     display: flex;
@@ -131,3 +132,45 @@
     text-align: center;
   }
   
+  .socialButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.socialButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  border: solid 1px var(--secondary-accent);
+  border-radius: 10px;
+  gap: 8px;
+}
+
+.socialButton:hover{
+    background-color: var(--input-focus);
+}
+
+.socialIcon {
+  margin-right: 8px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.dividerText {
+  padding: 0 10px;
+  color: #64748b;
+}

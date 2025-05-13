@@ -43,4 +43,6 @@ export const userApi = {
   delete: (id: string) => api.delete(`/user/${id}`),
   login: (data: { email: string; password: string; role: string }) =>
     api.post<{ access_token: string, user: UserModel }>("/auth/login", data),
+  google: () => `http://localhost:3001/auth/google`,
+  telegram: (data: any) => api.get("/auth/telegram", data),
 };

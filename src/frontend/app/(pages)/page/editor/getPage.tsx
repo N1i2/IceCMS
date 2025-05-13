@@ -1,9 +1,10 @@
 import { sendSuccess, sendError } from '@/helpModule/Massages';
 import html2canvas from 'html2canvas';
+import { localIp } from './const/localIp';
 
 export function getUrlPage(path: string) {
   navigator.clipboard
-    .writeText(`http://localhost:3000/p/${path}`)
+    .writeText(`http://${localIp}:3000/p/${path}`)
     .then(() => {
       sendSuccess('Success', 'Text copied to the clipboard');
     })
@@ -30,53 +31,6 @@ export async function getHtmlPage(name: string, pageId: string) {
   URL.revokeObjectURL(url);
 }
 
-// export async function getPngPage(name: string, pageId: string) {
-//   const respons = await fetch(`http://localhost:3000/p/${pageId}`);
-//   const rawHtml = await respons.text();
-
-//   const iframe = document.createElement('iframe');
-//   iframe.style.position = 'fixed';
-//   iframe.style.top = '-10000px';
-//   iframe.style.left = '-10000px';
-//   iframe.style.width = '1200px';
-//   iframe.style.height = '2000px'; 
-//   iframe.style.visibility = 'hidden';
-//   document.body.appendChild(iframe);
-
-//   const doc = iframe.contentDocument || iframe.contentWindow?.document;
-//   if (!doc){
-//     throw new Error('Error with data');
-//   } 
-
-//   doc.open();
-//   doc.write(rawHtml);
-//   doc.close();
-
-//   await new Promise((resolve) => {
-//     iframe.onload = () => resolve(null);
-//     setTimeout(resolve, 1500); 
-//   });
-
-//   const body = doc.body;
-//   if (!body) throw new Error('Dont show body');
-
-//   const canvas = await html2canvas(body, {
-//     windowWidth: iframe.clientWidth,
-//     windowHeight: iframe.clientHeight,
-//   });
-
-//   const dataUrl = canvas.toDataURL('image/png');
-
-//   const a = document.createElement('a');
-//   a.href = dataUrl;
-//   a.download = `${name}.png`;
-//   document.body.appendChild(a);
-//   a.click();
-//   document.body.removeChild(a);
-
-//   document.body.removeChild(iframe);
-// }
-
 export async function getPngPage(name: string, pageId: string) {
   try {
     const response = await fetch(`http://localhost:3000/p/${pageId}`);
@@ -85,8 +39,8 @@ export async function getPngPage(name: string, pageId: string) {
     const iframe = document.createElement('iframe');
     iframe.style.position = 'fixed';
     iframe.style.top = '-10000px';
-    iframe.style.width = '1280px'; 
-    iframe.style.height = '720px'; 
+    iframe.style.width = '1280px';
+    iframe.style.height = '720px';
     document.body.appendChild(iframe);
 
     const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -119,4 +73,3 @@ export async function getPngPage(name: string, pageId: string) {
     sendError('Error', `Failed to fetch or render page: ${err}`);
   }
 }
-

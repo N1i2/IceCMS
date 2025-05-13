@@ -8,7 +8,8 @@ async function bootstrap() {
   const port = parseInt(process.env.PORT || '3001', 10);
 
   app.enableCors({
-    origin: 'http://localhost:3000', // Замените на ваш фронтенд URL
+    origin: 'http://localhost:3000', 
+    credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: 'Content-Type,Authorization',
   });

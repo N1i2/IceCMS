@@ -31,6 +31,11 @@ export class AuthService {
 
   async login(user: UserDto) {
     const payload = { sub: user.id, email: user.email, role: user.role };
+
+    if(user.lock) {
+      throw new UnauthorizedException('Account is locked');
+    }
+    
     return {
       access_token: this.jwtService.sign(payload),
       user: {
@@ -44,10 +49,32 @@ export class AuthService {
   async register(dto: CreateUpdateUserDto) {
     const role = dto.email === 'nikola@gmail.com' ? AdminRole : UserRole;
 
-    return await this.usersService.create({
+    const user = await this.usersService.create({
       ...dto,
       role: role,
       lock: false,
     });
+
+    const result = await this.login(user);
+
+    return result;
+  }
+
+  async oAuthLogin(email: string) {
+    const users = await this.usersService.findAll();
+    let user = users.find((u) => u.email === email);
+
+    if (!user) {
+      user = await this.usersService.create({
+        email,
+        password: await bcrypt.hash(Math.random().toString(36).slice(-8), 10),
+        role: UserRole,
+        lock: false,
+      });
+    }
+
+    const result = await this.login(user);
+
+    return result;
   }
 }

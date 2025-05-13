@@ -3,6 +3,7 @@ import { Telegraf, Scenes, session, Markup } from 'telegraf';
 import * as dotenv from 'dotenv';
 import axios from 'axios';
 import { Page } from './const/pageModel';
+import { localIp } from './const/localIp';
 
 const UrlChoose = 'Url';
 const HtmlChoose = 'Html';
@@ -58,9 +59,7 @@ export class BotService implements OnModuleInit {
       const text = ctx.message.text;
 
       if (text === UrlChoose || text === HtmlChoose) {
-        ctx.session.choice = text as
-          | typeof UrlChoose
-          | typeof HtmlChoose;
+        ctx.session.choice = text as typeof UrlChoose | typeof HtmlChoose;
         await ctx.scene.enter('askName');
       } else {
         await ctx.reply(
@@ -88,7 +87,7 @@ export class BotService implements OnModuleInit {
         )?.pageId;
 
         if (greeting === UrlChoose) {
-          await ctx.reply(`http://localhost:3000/p/${pageId}`);
+          await ctx.reply(`http://${localIp}:3000/p/${pageId}`);
         } else if (greeting === HtmlChoose) {
           const fs = await import('fs');
           const path = await import('path');
@@ -135,10 +134,20 @@ export class BotService implements OnModuleInit {
 
     await this.bot.telegram.setMyCommands([
       { command: 'message', description: 'Start a dialog' },
+      { command: 'gologin', description: 'If you want to try my app' },
     ]);
 
     this.bot.command('message', (ctx) => {
       ctx.scene.enter('choose');
+    });
+
+    this.bot.command('gologin', (ctx) => {
+      ctx.reply(
+        'Open login page in browser:',
+        Markup.inlineKeyboard([
+          Markup.button.url('Go to Login', `http://${localIp}:3000/login`),
+        ]),
+      );
     });
 
     this.bot.hears('Try again', (ctx) => {

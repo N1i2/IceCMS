@@ -22,6 +22,8 @@ import { sendError } from '@/helpModule/Massages';
 import { Toaster } from 'sonner';
 import styles from './page.module.css';
 import { AxiosError } from 'axios';
+import Image from 'next/image';
+import { siGoogle, siTelegram } from 'simple-icons/icons';
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -42,26 +44,31 @@ export default function LoginPage() {
 
   useEffect(() => {
     document.title = 'Login';
+
+    const script = document.createElement('script');
+    script.src = 'https://telegram.org/js/telegram-widget.js?22';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
   }, [router]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       let response;
 
-      console.log({...values,
-        lock: false,
-        role: UserRole,});
-
       if (isRegister) {
         response = await userApi.create({
-          ...values
+          ...values,
+        });
+      } else {
+        response = await userApi.login({
+          ...values,
+          role: UserRole,
         });
       }
-
-      response = await userApi.login({
-        ...values,
-        role: UserRole,
-      });
 
       const token = response.data.access_token;
       const role = response.data.user?.role || UserRole;
@@ -77,16 +84,49 @@ export default function LoginPage() {
 
       router.push('/home');
     } catch (err: unknown) {
-    const error = err as AxiosError<{
-      message?: string;
-      statusCode?: number;
-    }>;
-    
-    sendError(
-      'Error',
-      error.response?.data?.message || error.message || 'Unknown error'
-    );}
+      const error = err as AxiosError<{
+        message?: string;
+        statusCode?: number;
+      }>;
+
+      sendError(
+        'Error',
+        error.response?.data?.message || error.message || 'Unknown error',
+      );
+    }
   };
+
+  const handleGoogleLogin = () => {
+    window.location.href = userApi.google();
+  };
+
+  // const handleTelegramLogin = () => {
+  //   window.Telegram?.Login?.auth(
+  //     { bot_id: process.env.NEXT_PUBLIC_TELEGRAM_BOT_ID, request_access: true },
+  //     (data: any) => {
+  //       userApi
+  //         .loginWithTelegram(data)
+  //         .then((response) => {
+  //           const token = response.data.access_token;
+  //           const role = response.data.user?.role || UserRole;
+  //           const userId = response.data.user?.id;
+
+  //           if (token) {
+  //             localStorage.setItem('token', token);
+  //             localStorage.setItem('userRole', role);
+  //             if (userId) {
+  //               localStorage.setItem('userId', userId);
+  //             }
+  //           }
+
+  //           router.push('/home');
+  //         })
+  //         .catch((err: AxiosError) => {
+  //           sendError('Error', `Failed to login with Telegram ${err}`);
+  //         });
+  //     },
+  //   );
+  // };
 
   return (
     <div className={styles.container}>
@@ -156,6 +196,33 @@ export default function LoginPage() {
             </Button>
           </div>
 
+          <div className={styles.divider}>
+            <span className={styles.dividerText}>OR</span>
+          </div>
+
+          <div className={styles.socialButtons}>
+            <Button
+              variant="outline"
+              className={styles.socialButton}
+              onClick={handleGoogleLogin}
+            >
+              <svg viewBox="0 0 24 24" fill="#ac5" width="24" height="24">
+                <path d={siGoogle.path} />
+              </svg>
+              Continue with Google
+            </Button>
+
+            {/* <Button
+              variant="outline"
+              className={styles.socialButton}
+              // onClick={handleTelegramLogin}
+            >
+              <svg viewBox="0 0 24 24" fill="#4285F4" width="24" height="24">
+                <path d={siTelegram.path} />
+              </svg>
+              Continue with Telegram
+            </Button> */}
+          </div>
         </CardContent>
       </Card>
       <Toaster />
