@@ -13,13 +13,13 @@ const nextConfig: NextConfig = {
       {
         source: "/api/:path*", 
         destination: isProduction
-          ? "https://backend:3001/:path*" 
+          ? "http://backend:3001/:path*" 
           : "http://localhost:3001/:path*", 
       },
       {
         source: "/p/:path*", 
         destination: isProduction
-          ? "https://backend:3001/:path*" 
+          ? "http://backend:3001/:path*" 
           : "http://localhost:3001/:path*", 
       },
     ];

@@ -3,6 +3,7 @@ import { ResourceModel } from "@/app/models/resourceModel";
 import { TemplateModel } from "@/app/models/templateModel";
 import { PageModel } from "@/app/models/pageModel";
 import { UserModel } from "@/app/models/userModel";
+import { localIp } from "../(pages)/page/editor/const/localIp";
 
 const api = axios.create({
   baseURL: "/api",
@@ -43,6 +44,6 @@ export const userApi = {
   delete: (id: string) => api.delete(`/user/${id}`),
   login: (data: { email: string; password: string; role: string }) =>
     api.post<{ access_token: string, user: UserModel }>("/auth/login", data),
-  google: () => `http://localhost:3001/auth/google`,
+  google: () => `http://${localIp}:3001/auth/google`,
   telegram: (data: any) => api.get("/auth/telegram", data),
 };
