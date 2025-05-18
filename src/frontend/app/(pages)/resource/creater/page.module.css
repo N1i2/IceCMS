@@ -1,0 +1,250 @@
+.container {
+  min-height: 100vh;
+  background-color: #0a0a0a;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card {
+  width: 90%;
+  max-width: 1200px;
+  padding-right: 2%;
+  margin: 2rem auto;
+  border: 1px solid rgba(0, 214, 194, 0.2);
+  background-color: #111;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 30px rgba(0, 214, 194, 0.2);
+}
+
+.title {
+  font-size: 2.5rem;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #00d6c2;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.content {
+  padding: 2rem;
+}
+
+.formGroup {
+  margin-bottom: 2rem;
+}
+
+.label {
+  display: block;
+  color: #f1f5f9;
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.input {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.input:-webkit-autofill,
+.input:-webkit-autofill:hover, 
+.input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f1f5f9;
+  -webkit-box-shadow: 0 0 0px 1000px #1a1a1a inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.selectTrigger {
+  width: 100%;
+  background-color: #1a1a1a !important;
+}
+
+.selectContent {
+  width: var(--radix-select-trigger-width);
+  min-width: 100%;
+  background-color: #1a1a1a !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  z-index: 50;
+}
+
+.selectItem {
+  padding: 0.75rem 1rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  outline: none;
+  font-size: 1rem;
+  color: #f1f5f9;
+}
+
+.selectItem:hover {
+  background-color: rgba(0, 214, 194, 0.1);
+  color: #00d6c2;
+}
+
+.selectItem[data-highlighted] {
+  background-color: rgba(0, 214, 194, 0.2);
+  color: #00d6c2;
+}
+
+.selectItem[data-state="checked"] {
+  background-color: rgba(0, 214, 194, 0.2);
+  color: #00d6c2;
+}
+
+.imageUploadLabel {
+  display: block;
+  cursor: pointer;
+  width: 100%;
+}
+
+.emptyImagePlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  border: 2px dashed #00d6c2;
+  border-radius: 0.5rem;
+  background-color: #1a1a1a;
+  transition: background-color 0.2s;
+  height: 200px;
+}
+
+.emptyImagePlaceholder:hover {
+  background-color: rgba(0, 214, 194, 0.08);
+}
+
+.uploadIcon {
+  width: 48px;
+  height: 48px;
+  color: #00d6c2;
+}
+
+.uploadHint {
+  color: #f1f5f9;
+  margin-top: 1rem;
+  font-size: 1rem;
+}
+
+.imageContainer {
+  position: relative;
+  width: 100%;
+  height: auto;
+}
+
+.image {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: contain;
+}
+
+.imagePreview {
+  position: relative;
+  width: 100%;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.imageOverlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.imageOverlay:hover {
+  opacity: 1;
+}
+
+.overlayText {
+  color: #00d6c2;
+  font-weight: 500;
+}
+
+.fileInput {
+  display: none;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1.5rem;
+  padding-top: 2rem;
+  margin-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.primaryButton {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  background-color: #00d6c2;
+  color: #0a0a0a;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.primaryButton:hover {
+  background-color: #00b8a9;
+}
+
+.outlineButton {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #f1f5f9;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.outlineButton:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: #00d6c2;
+  color: #00d6c2;
+}
+
+.errorText {
+  color: #ef4444;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  margin-top: 0.25rem;
+}
+
+.loader {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

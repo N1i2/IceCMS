@@ -1,0 +1,176 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--primary-bg);
+    padding: 0 16px;
+  }
+  
+  .card {
+    width: 100%;
+    max-width: 400px;
+    background-color: var(--primary-bg);
+    border-radius: 8px;
+    box-shadow: 0 0 3000px var(--input-border); 
+    overflow: hidden;
+  }
+  
+  .cardHeader {
+    background-color: var(--secondary-accent);
+    color: var(--light-text);
+    padding: 16px;
+    text-align: center;
+  }
+  
+  .cardTitle {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+  
+  .cardContent {
+    padding: 20px;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .formItem {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .formLabel {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #acacac;
+  }
+  
+  .input {
+    padding: 12px;
+    border: 1px solid #acacac;
+    border-radius: 4px;
+    font-size: 1rem;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.3s, background-color 0.3s;
+    background-color: var(--primary-bg);
+    color: var(--light-text);
+  }
+  
+  .input:focus {
+    border-color: var(--secondary-accent);
+  }
+  
+  .input:-webkit-autofill,
+  .input:-webkit-autofill:hover,
+  .input:-webkit-autofill:focus,
+  .input:-webkit-autofill:active {
+    transition: background-color 9999s ease-in-out 0s;
+    -webkit-text-fill-color: var(--light-text);
+    background-color: var(--primary-bg) !important;
+    box-shadow: 0 0 0px 1000px var(--primary-bg) inset;
+  }
+  
+  .formMessage {
+    font-size: 0.875rem;
+    color: red;
+    margin-top: 4px;
+  }
+  
+  .button {
+    padding: 12px;
+    background-color: var(--secondary-accent);
+    color: var(--light-text);
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .button:hover {
+    background-color: var(--input-focus);
+  }
+  
+  .linkButton {
+    font-size: 0.875rem;
+    color: var(--secondary-accent);
+    padding: 0;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  
+  .linkButton:hover {
+    color: var(--input-focus);
+  }
+  
+  .textCenter {
+    text-align: center;
+  }
+  
+  .mt4 {
+    margin-top: 16px;
+  }
+  
+  
+  .resetContainer {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .infoText {
+    font-size: 0.9rem;
+    color: var(--light-text);
+    text-align: center;
+  }
+  
+  .socialButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.socialButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  border: solid 1px var(--secondary-accent);
+  border-radius: 10px;
+  gap: 8px;
+}
+
+.socialButton:hover{
+    background-color: var(--input-focus);
+}
+
+.socialIcon {
+  margin-right: 8px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.dividerText {
+  padding: 0 10px;
+  color: #64748b;
+}

@@ -1,0 +1,36 @@
+services:
+  mongodb:
+    image: mongo:latest
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: ice-cms
+
+  backend:
+    build:
+      context: ./src/backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=docker
+      - MONGODB_URI=mongodb://mongodb:27017/ice-cms
+      - PORT=3001
+
+  frontend:
+    build:
+      context: ./src/frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+
+  telegram-bot:
+    build:
+      context: ./src/telegram-bot
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - PORT=3002

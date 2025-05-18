@@ -1,0 +1,138 @@
+.container {
+  padding: 2rem;
+  background-color: var(--primary-bg);
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--input-border);
+}
+
+.title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: var(--light-text);
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.primaryButton {
+  background-color: var(--secondary-accent);
+  color: var(--primary-bg);
+  padding: 0.8rem 1.6rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 2rem;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.secondaryButton {
+  padding: 0.8rem 1.6rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  background-color: transparent;
+  color: var(--secondary-accent);
+  border: 1px solid var(--secondary-accent);
+  border-radius: 2rem;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.primaryButton:hover {
+  background-color: #00b8a9;
+}
+
+.secondaryButton:hover {
+  background-color: rgba(0, 214, 194, 0.1);
+}
+
+.primaryButton:active {
+  transform: scale(0.96);
+  background-color: #00998c;
+}
+
+.secondaryButton:active {
+  transform: scale(0.96);
+  background-color: rgba(0, 214, 194, 0.2);
+}
+
+.content {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.nameInput {
+  margin-bottom: 1.5rem;
+}
+
+.nameInput label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--light-text);
+  font-size: 1.1rem;
+}
+
+.input {
+  width: 100%;
+  max-width: 500px;
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 0.5rem;
+  color: var(--light-text);
+  transition: border-color 0.3s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 2px rgba(0, 214, 194, 0.1);
+}
+
+.editor {
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 214, 194, 0.2);
+}
+
+/* GrapesJS editor overrides */
+.gjs-one-bg {
+  background-color: var(--input-bg) !important;
+}
+
+.gjs-two-color {
+  color: var(--light-text) !important;
+}
+
+.gjs-three-bg {
+  background-color: var(--secondary-accent) !important;
+}
+
+.gjs-four-color {
+  color: var(--secondary-accent) !important;
+}
+
+.gjs-pn-panel {
+  background-color: #0f0f0f !important;
+}
+
+.gjs-block {
+  background-color: #1a1a1a !important;
+  color: var(--light-text) !important;
+}
+
+.gjs-block:hover {
+  background-color: rgba(0, 214, 194, 0.1) !important;
+}

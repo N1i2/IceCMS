@@ -1,0 +1,17 @@
+FROM node:20-alpine AS builder
+WORKDIR /app
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm install
+# Copy all backend source and build the app
+COPY . .
+RUN npm run build
+
+FROM node:20-alpine
+WORKDIR /app
+# Copy production dependencies and built code
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/dist ./dist
+RUN npm install --only=production
+EXPOSE 3000
+CMD ["node", "dist/main.js"]
