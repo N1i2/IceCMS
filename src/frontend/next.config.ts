@@ -2,7 +2,6 @@ import type { NextConfig } from "next";
 import { localIp } from '@/helpModule/localIp';
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
   eslint: {
     ignoreDuringBuilds: true,
   },

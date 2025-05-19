@@ -96,38 +96,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleLogin = () => {
-    window.location.href = userApi.google();
-  };
-
-  // const handleTelegramLogin = () => {
-  //   window.Telegram?.Login?.auth(
-  //     { bot_id: process.env.NEXT_PUBLIC_TELEGRAM_BOT_ID, request_access: true },
-  //     (data: any) => {
-  //       userApi
-  //         .loginWithTelegram(data)
-  //         .then((response) => {
-  //           const token = response.data.access_token;
-  //           const role = response.data.user?.role || UserRole;
-  //           const userId = response.data.user?.id;
-
-  //           if (token) {
-  //             localStorage.setItem('token', token);
-  //             localStorage.setItem('userRole', role);
-  //             if (userId) {
-  //               localStorage.setItem('userId', userId);
-  //             }
-  //           }
-
-  //           router.push('/home');
-  //         })
-  //         .catch((err: AxiosError) => {
-  //           sendError('Error', `Failed to login with Telegram ${err}`);
-  //         });
-  //     },
-  //   );
-  // };
-
   return (
     <div className={styles.container}>
       <Card className={styles.card}>
@@ -194,34 +162,6 @@ export default function LoginPage() {
                 ? 'Have an account? Login'
                 : "Don't have an account? Register"}
             </Button>
-          </div>
-
-          <div className={styles.divider}>
-            <span className={styles.dividerText}>OR</span>
-          </div>
-
-          <div className={styles.socialButtons}>
-            <Button
-              variant="outline"
-              className={styles.socialButton}
-              onClick={handleGoogleLogin}
-            >
-              <svg viewBox="0 0 24 24" fill="#ac5" width="24" height="24">
-                <path d={siGoogle.path} />
-              </svg>
-              Continue with Google
-            </Button>
-
-            {/* <Button
-              variant="outline"
-              className={styles.socialButton}
-              // onClick={handleTelegramLogin}
-            >
-              <svg viewBox="0 0 24 24" fill="#4285F4" width="24" height="24">
-                <path d={siTelegram.path} />
-              </svg>
-              Continue with Telegram
-            </Button> */}
           </div>
         </CardContent>
       </Card>
