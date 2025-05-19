@@ -60,8 +60,7 @@ _03) npm cache clean --force
 _04) docker-compose up --build
 _05) docker-compose up -d --no-deps --build <service_name>
 
-
---) удалить ос и nginx(google авторизация) из документации
+--) удалить ос и nginx google авторизация из документации
 --) дописать документацию
 --) слить все на гит
 --) решить проблему с телеграммом
