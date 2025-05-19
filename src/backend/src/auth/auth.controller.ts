@@ -1,9 +1,18 @@
-import { Controller, Post, Body, UnauthorizedException, Get, UseGuards, Req, Res } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UnauthorizedException,
+  Get,
+  UseGuards,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUpdateUserDto } from '../user_module/dto/CreateUpdateUserDto';
 import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
-import { UserDto } from 'src/user_module/dto/UserDto';
+import { localIp } from 'src/helpModule/localIp';
 
 @Controller('auth')
 export class AuthController {
@@ -25,7 +34,7 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  async googleAuth() {  }
+  async googleAuth() {}
 
   @Get('google/redirect')
   @UseGuards(AuthGuard('google'))
@@ -33,10 +42,8 @@ export class AuthController {
     const user = await this.authService.oAuthLogin(req.user.email);
     const token = user.access_token;
 
-    // if () {
-    //   throw new UnauthorizedException('');
-    // }
-
-    res.redirect(`http://localhost:3000/login/auth?token=${token}&userId=${user.user.id}&userRole=${user.user.role}`);
+    res.redirect(
+      `http://${localIp}:3000/login/auth?token=${token}&userId=${user.user.id}&userRole=${user.user.role}`,
+    );
   }
 }

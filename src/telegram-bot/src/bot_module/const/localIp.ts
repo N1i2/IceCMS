@@ -1,14 +1,12 @@
-// export const localIp = '192.168.124.206';
-
 import * as os from 'os';
 
 const isProduction = process.env.NODE_ENV === 'production';
-export const localIp = getLocalExternalIp();
-export const backendUrl = `http://${isProduction ? 'backend' : '127.0.0.1'}:3001`;
-export const frontendUrl = `http://127.0.0.1:3000`;
-export const frontendForHtmlUrl = `http://${isProduction ? 'frontend' : '127.0.0.1'}:3000`;
+export const localIp = getServerIp();
+export const backendUrl = `http://${isProduction ? 'backend' : getServerIp()}:3001`;
+export const frontendUrl = `http://${getServerIp()}:3000`;
+export const frontendForHtmlUrl = `http://${isProduction ? 'frontend' : getServerIp()}:3000`;
 
-function getLocalExternalIp(): string {
+function getServerIp(): string {
   const interfaces = os.networkInterfaces();
   for (const name of Object.keys(interfaces)) {
     for (const net of interfaces[name]!) {
@@ -17,5 +15,6 @@ function getLocalExternalIp(): string {
       }
     }
   }
-  return '127.0.0.1';
+
+  return 'localhost';
 }

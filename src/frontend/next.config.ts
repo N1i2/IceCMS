@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
+import { localIp } from '@/helpModule/localIp';
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -14,13 +16,13 @@ const nextConfig: NextConfig = {
         source: "/api/:path*", 
         destination: isProduction
           ? "http://backend:3001/:path*" 
-          : "http://localhost:3001/:path*", 
+          : `http://${localIp}:3001/:path*`, 
       },
       {
         source: "/p/:path*", 
         destination: isProduction
           ? "http://backend:3001/:path*" 
-          : "http://localhost:3001/:path*", 
+          : `http://${localIp}:3001/:path*`, 
       },
     ];
   },

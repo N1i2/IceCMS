@@ -1,20 +1,22 @@
 import { sendSuccess, sendError } from '@/helpModule/Massages';
 import html2canvas from 'html2canvas';
-import { localIp } from './const/localIp';
+import { localIp } from '../../../../helpModule/localIp';
 
 export function getUrlPage(path: string) {
-  navigator.clipboard
-    .writeText(`http://${localIp}:3000/p/${path}`)
-    .then(() => {
-      sendSuccess('Success', 'Text copied to the clipboard');
-    })
-    .catch((err) => {
-      sendError('Error', `Error with clipboard: ${err}`);
-    });
+  // navigator.clipboard
+  //   .writeText(`http://${localIp}:3000/p/${path}`)
+  //   .then(() => {
+  //     sendSuccess('Success', 'Text copied to the clipboard');
+  //   })
+  //   .catch((err) => {
+  //     sendError('Error', `Error with clipboard: ${err}`);
+  //   });
+
+  sendSuccess('Please go to this Url', `http://${localIp}:3000/p/${path}`);
 }
 
 export async function getHtmlPage(name: string, pageId: string) {
-  const respons = await fetch(`http://localhost:3000/p/${pageId}`);
+  const respons = await fetch(`http://${localIp}:3000/p/${pageId}`);
   const rawHtml = await respons.text();
 
   const blob = new Blob([`${rawHtml}`], { type: 'text/html' });
@@ -33,7 +35,7 @@ export async function getHtmlPage(name: string, pageId: string) {
 
 export async function getPngPage(name: string, pageId: string) {
   try {
-    const response = await fetch(`http://localhost:3000/p/${pageId}`);
+    const response = await fetch(`http://${localIp}:3000/p/${pageId}`);
     const rawHtml = await response.text();
 
     const iframe = document.createElement('iframe');

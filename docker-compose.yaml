@@ -14,7 +14,6 @@ services:
       - "3001:3001"
     environment:
       - NODE_ENV=docker
-      - MONGODB_URI=mongodb://mongodb:27017/ice-cms
       - PORT=3001
 
   frontend:
@@ -34,3 +33,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3002
+
+networks:
+  app-network:
+    driver: bridge
