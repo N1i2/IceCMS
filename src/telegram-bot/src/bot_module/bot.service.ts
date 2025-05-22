@@ -7,6 +7,8 @@ import { backendUrl, frontendUrl, frontendForHtmlUrl } from './const/localIp';
 
 const UrlChoose = 'Url';
 const HtmlChoose = 'Html';
+const TryAgain = 'Try again';
+const Cancel = 'Cancel';
 
 dotenv.config();
 
@@ -19,44 +21,57 @@ type MyContext = Scenes.SceneContext & { session: MySession };
 @Injectable()
 export class BotService implements OnModuleInit {
   private bot: Telegraf<MyContext>;
+  private pages: Page[] = [];
+  private validNames: string[] = [];
+  private validNamesArrays: string[][] = [];
 
-  async onModuleInit() {
-    let validNames: string[] = [];
-    let pages: Page[] = [];
-    const validNamesArrays: string[][] = [];
+  constructor() {
+    this.bot = new Telegraf<MyContext>(process.env.TELEGRAM_BOT_TOKEN!);
+  }
 
+  private async fetchPages(): Promise<boolean> {
     try {
       const response = await axios.get(`${backendUrl}/page`);
-      pages = response.data as Page[];
-
-      if (pages.length === 0) {
-        this.bot.command('message', (ctx) => {
-          ctx.reply('Список страниц пуст. Пожалуйста, попробуйте позже.');
-          return;
-        });
-        return;
+      this.pages = response.data as Page[];
+      
+      if (this.pages.length === 0) {
+        return false;
       }
 
-      if (Array.isArray(pages)) {
-        validNames = pages.map((page) => String(page.name).toLowerCase());
+      this.validNames = this.pages.map((page) => String(page.name).toLowerCase());
+      this.validNamesArrays = [];
 
-        for (let i = 0; i < validNames.length; i += 3) {
-          const chunk = validNames
-            .slice(i, i + 3)
-            .map((name) => name.charAt(0).toUpperCase() + name.slice(1));
-          validNamesArrays.push(chunk);
-        }
+      for (let i = 0; i < this.validNames.length; i += 3) {
+        const chunk = this.validNames
+          .slice(i, i + 3)
+          .map((name) => name.charAt(0).toUpperCase() + name.slice(1));
+        this.validNamesArrays.push(chunk);
       }
+
+      return true;
     } catch (error) {
-      console.error('Error with DB: ', error);
+      console.error('Error fetching pages from DB:', error);
+      return false;
     }
+  }
+
+  async onModuleInit() {
+    // Initial fetch
+    await this.fetchPages();
 
     const chooseScene = new Scenes.BaseScene<MyContext>('choose');
     const askNameScene = new Scenes.BaseScene<MyContext>('askName');
 
-    chooseScene.enter((ctx) => {
-      ctx.reply(
-        'Select a format: ',
+    chooseScene.enter(async (ctx) => {
+      const hasPages = await this.fetchPages();
+      
+      if (!hasPages) {
+        await ctx.reply('Currently there are no pages available. Please try later.');
+        return ctx.scene.leave();
+      }
+
+      await ctx.reply(
+        'Select a format:',
         Markup.keyboard([[UrlChoose], [HtmlChoose]])
           .oneTime()
           .resize(),
@@ -71,79 +86,111 @@ export class BotService implements OnModuleInit {
         await ctx.scene.enter('askName');
       } else {
         await ctx.reply(
-          'Please choose one of the suggested formats: Url, Html or Png.',
+          'Please choose one of the suggested formats:',
+          Markup.keyboard([[UrlChoose], [HtmlChoose]])
+            .oneTime()
+            .resize(),
         );
-
-        await ctx.scene.enter('choose');
       }
     });
 
-    askNameScene.enter((ctx) => {
-      ctx.reply(
-        'Enter the id of the page you are looking for or select one of the following:',
-        Markup.keyboard(validNamesArrays).oneTime().resize(),
+    askNameScene.enter(async (ctx) => {
+      const hasPages = await this.fetchPages();
+      
+      if (!hasPages) {
+        await ctx.reply('Currently there are no pages available. Please try later.');
+        return ctx.scene.leave();
+      }
+
+      await ctx.reply(
+        'Enter the name of the page you are looking for or select one from the list:',
+        Markup.keyboard([...this.validNamesArrays, [Cancel]])
+          .oneTime()
+          .resize(),
       );
     });
 
     askNameScene.on('text', async (ctx) => {
-      const input = ctx.message.text.trim().toLowerCase();
+      const text = ctx.message.text.trim();
 
-      if (validNames.includes(input)) {
-        const greeting = ctx.session.choice;
-        const pageId = pages.find(
-          (p) => p.name.toLowerCase() === input,
-        )?.pageId;
+      if (text === Cancel) {
+        await ctx.reply('Returning to format selection...');
+        return ctx.scene.enter('choose');
+      }
 
-        if (greeting === UrlChoose) {
-          await ctx.reply(`${frontendUrl}/p/${pageId}`);
-        } else if (greeting === HtmlChoose) {
+      const input = text.toLowerCase();
+
+      if (!this.validNames.includes(input)) {
+        await ctx.reply(
+          `I dont know page \"${text}\". Please select from the list below:`,
+          Markup.keyboard([...this.validNamesArrays, [Cancel]])
+            .oneTime()
+            .resize(),
+        );
+        return;
+      }
+
+      // Refresh data right before processing the request
+      const hasPages = await this.fetchPages();
+      if (!hasPages) {
+        await ctx.reply('The page is no longer available. Please start over.');
+        return ctx.scene.leave();
+      }
+
+      const selectedPage = this.pages.find(p => p.name.toLowerCase() === input);
+      if (!selectedPage) {
+        await ctx.reply('Page not found. Please try again.');
+        return ctx.scene.enter('askName');
+      }
+
+      try {
+        if (ctx.session.choice === UrlChoose) {
+          await ctx.reply(`${frontendUrl}/p/${selectedPage.pageId}`);
+        } else if (ctx.session.choice === HtmlChoose) {
           const fs = await import('fs');
           const path = await import('path');
 
-          const response = await axios.get(`${frontendForHtmlUrl}/p/${pageId}`);
-          const pageHtml = response.data as string;
+          const response = await axios.get(`${frontendForHtmlUrl}/p/${selectedPage.pageId}`);
+          const htmlContent = response.data;
 
-          const htmlContent = `${pageHtml}`;
           const filePath = path.resolve(__dirname, `${input}.html`);
-
           fs.writeFileSync(filePath, htmlContent, 'utf-8');
 
           await ctx.replyWithDocument({
             source: filePath,
             filename: `${input}.html`,
           });
-        } else {
-          await ctx.reply(`Somthing Wrong`);
+
+          // Clean up the file after sending
+          fs.unlinkSync(filePath);
         }
-
-        await ctx.reply(
-          'Try again?',
-          Markup.keyboard([['Try again']])
-            .oneTime()
-            .resize(),
-        );
-
-        await ctx.scene.leave();
-      } else {
-        await ctx.reply(
-          'Invalid id, please select from the list below:',
-          Markup.keyboard(validNamesArrays).oneTime().resize(),
-        );
+      } catch (error) {
+        console.error('Error processing request:', error);
+        await ctx.reply('An error occurred while processing your request. Please try again.');
       }
+
+      await ctx.reply(
+        'What would you like to do next?',
+        Markup.keyboard([[TryAgain], [Cancel]])
+          .oneTime()
+          .resize(),
+      );
     });
 
     const stage = new Scenes.Stage<MyContext>([chooseScene, askNameScene]);
 
-    this.bot = new Telegraf<MyContext>(process.env.TELEGRAM_BOT_TOKEN!);
-
     this.bot.use(session());
-
     this.bot.use(stage.middleware());
 
     await this.bot.telegram.setMyCommands([
+      { command: 'start', description: 'Start interaction with bot' },
       { command: 'message', description: 'Start a dialog' },
-      { command: 'gologin', description: 'If you want to try my app' },
+      { command: 'gologin', description: 'Open login page' },
     ]);
+
+    this.bot.command('start', (ctx) => {
+      ctx.reply('Welcome! Use /message command to start searching for pages.');
+    });
 
     this.bot.command('message', (ctx) => {
       ctx.scene.enter('choose');
@@ -158,18 +205,29 @@ export class BotService implements OnModuleInit {
       );
     });
 
-    this.bot.hears('Try again', (ctx) => {
+    this.bot.hears(TryAgain, (ctx) => {
       ctx.scene.enter('choose');
+    });
+
+    this.bot.hears(Cancel, async (ctx) => {
+      if (ctx.scene.current?.id === 'askName') {
+        await ctx.reply('Returning to format selection...');
+        ctx.scene.enter('choose');
+      } else {
+        await ctx.reply('Operation cancelled. Use /message if you want to start again.');
+        ctx.scene.leave();
+      }
     });
 
     this.bot.on('text', async (ctx, next) => {
       if (!ctx.scene?.current) {
-        // Waitting
+        await ctx.reply('Please use /message command to start.');
       } else {
         await next();
       }
     });
 
     await this.bot.launch();
+    console.log('Bot service started');
   }
 }

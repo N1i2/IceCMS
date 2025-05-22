@@ -15,6 +15,8 @@ services:
     environment:
       - NODE_ENV=production
       - MONGODB_URI=mongodb://mongodb:27017/ice-cms
+      - YANDEX_USERNAME=lalalala
+      - YANDEX_APP_PASSWORD=lalalala
       - PORT=3001
 
   frontend:
@@ -25,6 +27,17 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
+
+  telegram-bot:
+    build:
+      context: ./src/telegram-bot
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - LOCAL_IP=172.172.172.172
+      - TELEGRAM_BOT_TOKEN=lalalala
+      - PORT=3002
 
 networks:
   app-network:
