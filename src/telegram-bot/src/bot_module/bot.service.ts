@@ -56,7 +56,6 @@ export class BotService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    // Initial fetch
     await this.fetchPages();
 
     const chooseScene = new Scenes.BaseScene<MyContext>('choose');
@@ -130,7 +129,6 @@ export class BotService implements OnModuleInit {
         return;
       }
 
-      // Refresh data right before processing the request
       const hasPages = await this.fetchPages();
       if (!hasPages) {
         await ctx.reply('The page is no longer available. Please start over.');
@@ -161,7 +159,6 @@ export class BotService implements OnModuleInit {
             filename: `${input}.html`,
           });
 
-          // Clean up the file after sending
           fs.unlinkSync(filePath);
         }
       } catch (error) {
@@ -228,6 +225,5 @@ export class BotService implements OnModuleInit {
     });
 
     await this.bot.launch();
-    console.log('Bot service started');
   }
 }
